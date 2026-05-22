@@ -25,6 +25,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const navItems = [
     { label: "Portal", path: "/portal" },
     { label: "Resources", path: "/resources" },
+    { label: "Technicals", path: "/technicals" },
     { label: "Alumni", path: "/alumni" },
   ];
 

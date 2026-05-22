@@ -11,8 +11,19 @@ import Home from "@/pages/home";
 import Portal from "@/pages/portal";
 import ResourcesList from "@/pages/resources";
 import ResourceDetail from "@/pages/resources/detail";
+import CvResources from "@/pages/resources/cv";
+import CoverLetterResources from "@/pages/resources/cover-letters";
 import AlumniList from "@/pages/alumni";
 import AlumniDetail from "@/pages/alumni/detail";
+import AlumniInsights from "@/pages/alumni/insights";
+import TechnicalsIndex from "@/pages/technicals";
+import {
+  AccountingPage,
+  ValuationPage,
+  DcfPage,
+  LboPage,
+  MAndAPage,
+} from "@/pages/technicals/topic";
 import Upgrade from "@/pages/upgrade";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
@@ -176,7 +187,17 @@ function ClerkProviderWithRoutes() {
             <SignedIn><ResourcesList /></SignedIn>
             <SignedOut><Redirect to="/sign-in" /></SignedOut>
           </Route>
-          
+
+          <Route path="/resources/cv">
+            <SignedIn><CvResources /></SignedIn>
+            <SignedOut><Redirect to="/sign-in" /></SignedOut>
+          </Route>
+
+          <Route path="/resources/cover-letters">
+            <SignedIn><CoverLetterResources /></SignedIn>
+            <SignedOut><Redirect to="/sign-in" /></SignedOut>
+          </Route>
+
           <Route path="/resources/:id">
             <SignedIn><ResourceDetail /></SignedIn>
             <SignedOut><Redirect to="/sign-in" /></SignedOut>
@@ -186,9 +207,44 @@ function ClerkProviderWithRoutes() {
             <SignedIn><AlumniList /></SignedIn>
             <SignedOut><Redirect to="/sign-in" /></SignedOut>
           </Route>
-          
+
+          <Route path="/alumni/insights">
+            <SignedIn><AlumniInsights /></SignedIn>
+            <SignedOut><Redirect to="/sign-in" /></SignedOut>
+          </Route>
+
           <Route path="/alumni/:id">
             <SignedIn><AlumniDetail /></SignedIn>
+            <SignedOut><Redirect to="/sign-in" /></SignedOut>
+          </Route>
+
+          <Route path="/technicals">
+            <SignedIn><TechnicalsIndex /></SignedIn>
+            <SignedOut><Redirect to="/sign-in" /></SignedOut>
+          </Route>
+
+          <Route path="/technicals/accounting">
+            <SignedIn><AccountingPage /></SignedIn>
+            <SignedOut><Redirect to="/sign-in" /></SignedOut>
+          </Route>
+
+          <Route path="/technicals/valuation">
+            <SignedIn><ValuationPage /></SignedIn>
+            <SignedOut><Redirect to="/sign-in" /></SignedOut>
+          </Route>
+
+          <Route path="/technicals/dcf">
+            <SignedIn><DcfPage /></SignedIn>
+            <SignedOut><Redirect to="/sign-in" /></SignedOut>
+          </Route>
+
+          <Route path="/technicals/lbo">
+            <SignedIn><LboPage /></SignedIn>
+            <SignedOut><Redirect to="/sign-in" /></SignedOut>
+          </Route>
+
+          <Route path="/technicals/m-and-a">
+            <SignedIn><MAndAPage /></SignedIn>
             <SignedOut><Redirect to="/sign-in" /></SignedOut>
           </Route>
           
