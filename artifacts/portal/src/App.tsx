@@ -147,7 +147,7 @@ function ClerkProviderWithRoutes() {
         signIn: {
           start: {
             title: "Sign in to FMAA",
-            subtitle: "Access the digital clubhouse",
+            subtitle: "Access the portal",
           },
         },
         signUp: {
