@@ -1,0 +1,11 @@
+CV & Cover Letter Resources
+A centralized hub for application materials, covering templates tailored to different industries (finance, consulting, tech, law), annotated examples showing what good looks like versus common mistakes, and guides on adapting the same base CV for different roles. Cover letter support would go beyond generic advice — think structures for cold outreach versus advertised roles, how to address gaps or career changes, and discipline-specific tone guidance. Live feedback tools or peer review systems would add real utility.
+
+Alumni Insights Across Industries
+Structured access to alumni experiences beyond the usual "networking coffee chat." This could include recorded Q&As or written profiles organized by industry, firm, and role type — so a student targeting investment banking at a boutique versus a bulge bracket gets relevant signal, not noise. Candid content matters here: what the day-to-day actually looks like, what surprised them, what they wish they'd known, and honest takes on culture and progression. A searchable directory with opt-in alumni willing to connect would extend the value further.
+
+Exclusive Recruiting Content
+Content that can't be found on Google — insider perspectives on what specific firms are actually looking for, how interview processes differ in practice from what's advertised, hiring timeline intelligence, and recaps from recruiting events. This is where partnerships with firms or alumni in hiring roles become valuable. Think early access to role breakdowns, firm-specific preparation guides, and honest assessments of which pathways are realistically competitive for students from your institution.
+
+Technical Preparation (Wall Street Prep style)
+Structured, rigorous content for the quantitative and analytical side of recruiting. For finance: accounting, valuation, DCF, LBO, M&A concepts with worked examples. For consulting: case frameworks, structuring problems, and practice cases with feedback. For tech: data structures, algorithms, and system design depending on the role. The key differentiator from free resources is quality control, progression structure, and practice with feedback — not just content dumps. Integrating mock interview tools or connecting students with coaches would round this out.

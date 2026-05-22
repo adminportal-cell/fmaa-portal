@@ -1,0 +1,19 @@
+uploads = []
+
+[[generated]]
+id = "xZAfPzKJauF2sINZ4qwEh"
+uri = "file://artifacts/portal/src/assets/images/hero-bg.png"
+type = "image"
+title = "FMAA landing page hero background"
+
+[[outputs]]
+id = "xHNYP0Aym6gu8hAVvH_62"
+uri = "file://artifacts/portal/src/assets/images/alumni-1.jpg"
+type = "image"
+title = "professional young corporate headshot male finance"
+
+[[outputs]]
+id = "zrxyKLp_wSHgWnjb_Dpdn"
+uri = "file://artifacts/portal/src/assets/images/alumni-2.jpg"
+type = "image"
+title = "professional young corporate headshot female finance"

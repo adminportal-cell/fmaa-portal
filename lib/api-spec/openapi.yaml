@@ -3,34 +3,575 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: FMAA Portal API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: me
+  - name: resources
+  - name: alumni
+  - name: dashboard
+  - name: admin
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
           content:
             application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+
+  /me:
+    get:
+      operationId: getMe
+      tags: [me]
+      summary: Current authenticated user with membership info
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Me" }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Portal home summary — category counts and recent activity
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardSummary" }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /resources:
+    get:
+      operationId: listResources
+      tags: [resources]
+      summary: List resources, optionally filtered by category
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema: { $ref: "#/components/schemas/ResourceCategory" }
+        - name: q
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                type: array
+                items: { $ref: "#/components/schemas/Resource" }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+    post:
+      operationId: createResource
+      tags: [resources]
+      summary: Create a resource (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ResourceInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Resource" }
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /resources/{id}:
+    get:
+      operationId: getResource
+      tags: [resources]
+      summary: Get a single resource
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Resource" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+    patch:
+      operationId: updateResource
+      tags: [resources]
+      summary: Update a resource (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ResourceUpdate" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Resource" }
+    delete:
+      operationId: deleteResource
+      tags: [resources]
+      summary: Delete a resource (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /alumni:
+    get:
+      operationId: listAlumni
+      tags: [alumni]
+      summary: List alumni profiles
+      parameters:
+        - name: industry
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AlumniProfile" }
+    post:
+      operationId: createAlumni
+      tags: [alumni]
+      summary: Create alumni profile (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AlumniInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AlumniProfile" }
+
+  /alumni/{id}:
+    get:
+      operationId: getAlumni
+      tags: [alumni]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AlumniProfile" }
+    patch:
+      operationId: updateAlumni
+      tags: [alumni]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AlumniUpdate" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AlumniProfile" }
+    delete:
+      operationId: deleteAlumni
+      tags: [alumni]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /alumni/industries:
+    get:
+      operationId: listIndustries
+      tags: [alumni]
+      summary: Industry breakdown with alumni counts
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/IndustryCount" }
+
+  /admin/members:
+    get:
+      operationId: listMembers
+      tags: [admin]
+      summary: List all members (admin only)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Member" }
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /admin/members/{id}:
+    patch:
+      operationId: updateMember
+      tags: [admin]
+      summary: Update a member's role or tier (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MemberUpdate" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Member" }
+
+  /admin/approved-members:
+    get:
+      operationId: listApprovedMembers
+      tags: [admin]
+      summary: List approved member emails (admin only)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ApprovedMember" }
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+    post:
+      operationId: addApprovedMembers
+      tags: [admin]
+      summary: Add one or more approved member emails (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AddApprovedMembersInput" }
+      responses:
+        "201":
+          description: Added
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AddApprovedMembersResult" }
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /admin/approved-members/{email}:
+    delete:
+      operationId: deleteApprovedMember
+      tags: [admin]
+      summary: Remove an approved member email (admin only)
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Deleted
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
 components:
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+      required: [status]
 
+    ErrorResponse:
+      type: object
+      properties:
+        error: { type: string }
+      required: [error]
+
+    ResourceCategory:
+      type: string
+      enum: [cv, cover_letter, alumni_insight, technical, recruiting]
+
+    MembershipTier:
+      type: string
+      enum: [standard, premium]
+
+    MemberRole:
+      type: string
+      enum: [member, admin]
+
+    Me:
+      type: object
+      required: [id, email, name, role, tier, isPremium, isAdmin]
+      properties:
+        id: { type: string }
+        email: { type: string }
+        name: { type: string }
+        role: { $ref: "#/components/schemas/MemberRole" }
+        tier: { $ref: "#/components/schemas/MembershipTier" }
+        isPremium: { type: boolean }
+        isAdmin: { type: boolean }
+        avatarUrl: { type: ["string", "null"] }
+
+    Resource:
+      type: object
+      required: [id, title, slug, category, summary, content, isPremium, createdAt, updatedAt, authorName]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        slug: { type: string }
+        category: { $ref: "#/components/schemas/ResourceCategory" }
+        summary: { type: string }
+        content: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        fileUrl: { type: ["string", "null"] }
+        coverImageUrl: { type: ["string", "null"] }
+        readingMinutes: { type: ["integer", "null"] }
+        isPremium: { type: boolean }
+        authorName: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    ResourceInput:
+      type: object
+      required: [title, category, summary, content]
+      properties:
+        title: { type: string, minLength: 1 }
+        category: { $ref: "#/components/schemas/ResourceCategory" }
+        summary: { type: string }
+        content: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        fileUrl: { type: string }
+        coverImageUrl: { type: string }
+        readingMinutes: { type: integer }
+        isPremium: { type: boolean }
+
+    ResourceUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        category: { $ref: "#/components/schemas/ResourceCategory" }
+        summary: { type: string }
+        content: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        fileUrl: { type: ["string", "null"] }
+        coverImageUrl: { type: ["string", "null"] }
+        readingMinutes: { type: ["integer", "null"] }
+        isPremium: { type: boolean }
+
+    AlumniProfile:
+      type: object
+      required: [id, name, role, company, industry, gradYear, insight, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        role: { type: string }
+        company: { type: string }
+        industry: { type: string }
+        gradYear: { type: integer }
+        insight: { type: string }
+        headshotUrl: { type: ["string", "null"] }
+        linkedinUrl: { type: ["string", "null"] }
+        location: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+
+    AlumniInput:
+      type: object
+      required: [name, role, company, industry, gradYear, insight]
+      properties:
+        name: { type: string }
+        role: { type: string }
+        company: { type: string }
+        industry: { type: string }
+        gradYear: { type: integer }
+        insight: { type: string }
+        headshotUrl: { type: string }
+        linkedinUrl: { type: string }
+        location: { type: string }
+
+    AlumniUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        role: { type: string }
+        company: { type: string }
+        industry: { type: string }
+        gradYear: { type: integer }
+        insight: { type: string }
+        headshotUrl: { type: ["string", "null"] }
+        linkedinUrl: { type: ["string", "null"] }
+        location: { type: ["string", "null"] }
+
+    IndustryCount:
+      type: object
+      required: [industry, count]
+      properties:
+        industry: { type: string }
+        count: { type: integer }
+
+    DashboardSummary:
+      type: object
+      required: [totalResources, totalAlumni, categoryCounts, recentResources, featuredAlumni]
+      properties:
+        totalResources: { type: integer }
+        totalAlumni: { type: integer }
+        categoryCounts:
+          type: array
+          items: { $ref: "#/components/schemas/CategoryCount" }
+        recentResources:
+          type: array
+          items: { $ref: "#/components/schemas/Resource" }
+        featuredAlumni:
+          type: array
+          items: { $ref: "#/components/schemas/AlumniProfile" }
+
+    CategoryCount:
+      type: object
+      required: [category, count]
+      properties:
+        category: { $ref: "#/components/schemas/ResourceCategory" }
+        count: { type: integer }
+
+    Member:
+      type: object
+      required: [id, email, name, role, tier, createdAt]
+      properties:
+        id: { type: string }
+        email: { type: string }
+        name: { type: string }
+        role: { $ref: "#/components/schemas/MemberRole" }
+        tier: { $ref: "#/components/schemas/MembershipTier" }
+        createdAt: { type: string, format: date-time }
+
+    MemberUpdate:
+      type: object
+      properties:
+        role: { $ref: "#/components/schemas/MemberRole" }
+        tier: { $ref: "#/components/schemas/MembershipTier" }
+
+    ApprovedMember:
+      type: object
+      required: [email, createdAt]
+      properties:
+        email: { type: string }
+        note: { type: ["string", "null"] }
+        addedBy: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+
+    AddApprovedMembersInput:
+      type: object
+      required: [emails]
+      properties:
+        emails:
+          oneOf:
+            - type: string
+            - type: array
+              items: { type: string }
+        note: { type: string }
+
+    AddApprovedMembersResult:
+      type: object
+      required: [added, emails]
+      properties:
+        added: { type: integer }
+        emails:
+          type: array
+          items: { type: string }

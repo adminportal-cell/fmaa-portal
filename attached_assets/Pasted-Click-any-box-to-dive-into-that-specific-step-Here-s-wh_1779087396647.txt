@@ -1,0 +1,12 @@
+Click any box to dive into that specific step. Here's what each phase actually involves:
+Phase 1 — accounts and setup (day 1, ~2 hours)
+Create a new Replit project using the Next.js template. Then create free accounts on GitHub (link your Replit repo here — this is the bridge to deployment), Supabase (your database and login system), and Stripe (payments). Each will give you API keys — save them somewhere safe, you'll add them to Replit as environment variables.
+Phase 2 — auth and user tiers (week 1)
+Install the Supabase library in your project and build a login/signup page. Supabase handles all the password security and sessions for you. Then add a role column to your users table in Supabase — values like standard or premium. This is how the site knows what each person can see.
+Phase 3 — payments (week 1–2)
+Create a Stripe "product" for the portal add-on subscription. When a member pays, Stripe fires a webhook (a notification to your site) that automatically flips their role in Supabase to premium. This is the bit that runs itself — no manual access granting needed.
+Phase 4 — content and editing access (week 2–3)
+Build the actual content pages (CV resources, alumni insights, technicals) and wrap them in a role check — if someone isn't premium, redirect them to the upgrade page. Then set up Sanity CMS: it gives every content editor their own login to a clean dashboard where they can add resources, upload alumni profiles, write guides — all without touching your code.
+Phase 5 — go live (end of week 3)
+Push your code to GitHub. Connect that GitHub repo to Vercel (free, takes 5 minutes). Vercel builds and hosts your site automatically. Buy a domain from Namecheap or Google Domains (something like portal.fmaa.com.au) and point it at Vercel. Done — proper site, proper URL, auto-deploys every time you push an update.
+The most important thing to get right early is Phase 2 — once auth and roles are solid, everything else slots in cleanly. Happy to write the actual code for any of these steps when you're ready.
