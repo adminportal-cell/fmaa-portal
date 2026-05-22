@@ -1,5 +1,5 @@
 import { useParams, Link } from "wouter";
-import { ArrowLeft, BookOpen, Briefcase, FileText, Lock, Clock, Calendar, Download, Crown } from "lucide-react";
+import { ArrowLeft, BookOpen, Briefcase, FileText, Lock, Clock, Calendar, Download } from "lucide-react";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -122,24 +122,19 @@ export default function ResourceDetail() {
                 </div>
               </div>
 
-              {/* Upgrade Gate */}
+              {/* Premium Gate */}
               <Card className="mt-8 border-accent/20 bg-accent/5 shadow-md relative z-20">
                 <CardContent className="p-8 text-center">
                   <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
                     <Lock className="w-8 h-8 text-accent" />
                   </div>
-                  <h3 className="text-2xl font-serif font-bold mb-4">Unlock Premium Content</h3>
+                  <h3 className="text-2xl font-serif font-bold mb-4">Premium Content</h3>
                   <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                    This resource contains proprietary insights, templates, or technical guides reserved for FMAA Premium members. Upgrade your membership to access the full content.
+                    This resource contains proprietary insights, templates, or technical guides reserved for FMAA Premium members.
                   </p>
-                  <div className="flex flex-col sm:flex-row justify-center gap-4">
-                    <Button size="lg" asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-                      <Link href="/upgrade">
-                        <Crown className="w-5 h-5 mr-2" /> Upgrade to Premium
-                      </Link>
-                    </Button>
+                  <div className="flex justify-center">
                     <Button size="lg" variant="outline" asChild>
-                      <Link href="/resources">Browse Free Resources</Link>
+                      <Link href="/resources">Browse Other Resources</Link>
                     </Button>
                   </div>
                 </CardContent>

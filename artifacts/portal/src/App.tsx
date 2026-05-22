@@ -24,7 +24,6 @@ import {
   LboPage,
   MAndAPage,
 } from "@/pages/technicals/topic";
-import Upgrade from "@/pages/upgrade";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 
@@ -248,11 +247,6 @@ function ClerkProviderWithRoutes() {
             <SignedOut><Redirect to="/sign-in" /></SignedOut>
           </Route>
           
-          <Route path="/upgrade">
-            <SignedIn><Upgrade /></SignedIn>
-            <SignedOut><Redirect to="/sign-in" /></SignedOut>
-          </Route>
-
           <Route path="/admin">
             <SignedIn><Admin /></SignedIn>
             <SignedOut><Redirect to="/sign-in" /></SignedOut>

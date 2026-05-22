@@ -29,10 +29,6 @@ export function Layout({ children }: { children: ReactNode }) {
     { label: "Alumni", path: "/alumni" },
   ];
 
-  if (me?.tier === "standard") {
-    navItems.push({ label: "Upgrade", path: "/upgrade" });
-  }
-
   if (me?.isAdmin) {
     navItems.push({ label: "Admin", path: "/admin" });
   }
@@ -104,16 +100,6 @@ export function Layout({ children }: { children: ReactNode }) {
                   )}
                 </div>
                 <DropdownMenuSeparator />
-                {me?.isPremium && (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link href="/upgrade" className="cursor-pointer">
-                        Manage Subscription
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
-                )}
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive cursor-pointer"
                   onClick={() => signOut({ redirectUrl: basePath || "/" })}

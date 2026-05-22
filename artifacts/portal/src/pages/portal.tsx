@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowRight, BookOpen, Briefcase, FileText, ChevronRight, Crown } from "lucide-react";
+import { ArrowRight, BookOpen, Briefcase, FileText, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { useGetMe, useGetDashboardSummary } from "@workspace/api-client-react";
 
@@ -77,22 +77,6 @@ export default function Portal() {
               Welcome back to the FMAA Portal.
             </p>
           </div>
-          {me.tier === "standard" && (
-            <Card className="bg-primary/5 border-primary/20 md:max-w-sm">
-              <CardContent className="p-4 flex items-center justify-between gap-4">
-                <div>
-                  <div className="font-semibold flex items-center gap-2">
-                    <Crown className="w-4 h-4 text-accent" />
-                    Upgrade to Premium
-                  </div>
-                  <p className="text-sm text-muted-foreground">Unlock CVs & technical guides.</p>
-                </div>
-                <Button size="sm" asChild className="bg-accent text-accent-foreground hover:bg-accent/90 border-0">
-                  <Link href="/upgrade">Upgrade</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          )}
         </section>
 
         {/* Stats Grid */}
@@ -221,19 +205,6 @@ export default function Portal() {
                 </div>
               )}
             </div>
-            
-            <Card className="bg-primary text-primary-foreground border-0 shadow-md">
-              <CardContent className="p-6">
-                <h3 className="font-bold mb-2">Upcoming Event</h3>
-                <p className="text-sm text-primary-foreground/80 mb-4">
-                  Networking Evening with Big 4 Partners. Details coming soon.
-                </p>
-                <Button variant="secondary" className="w-full bg-white text-primary hover:bg-white/90">
-                  Register Interest
-                </Button>
-              </CardContent>
-            </Card>
-            
           </div>
         </div>
 
