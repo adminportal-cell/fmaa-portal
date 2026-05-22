@@ -17,3 +17,9 @@ id = "zrxyKLp_wSHgWnjb_Dpdn"
 uri = "file://artifacts/portal/src/assets/images/alumni-2.jpg"
 type = "image"
 title = "professional young corporate headshot female finance"
+
+[[outputs]]
+id = "n32EYScOFJcdAXvnqAm2x"
+uri = "file://exports/fmaa-portal.tar.gz"
+type = "unspecified"
+title = "FMAA Portal — source code"
