@@ -28,3 +28,5 @@ export * from './resource';
 export * from './resourceCategory';
 export * from './resourceInput';
 export * from './resourceUpdate';
+export * from './userProgress';
+export * from './viewResult';

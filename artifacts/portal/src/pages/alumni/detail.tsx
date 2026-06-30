@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { useParams, Link } from "wouter";
-import { ArrowLeft, MapPin, Building2, GraduationCap, Linkedin, Quote } from "lucide-react";
+import { ArrowLeft, MapPin, Building2, GraduationCap, Linkedin, Quote, Pencil } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useGetAlumni } from "@workspace/api-client-react";
+import { useGetAlumni, useGetMe } from "@workspace/api-client-react";
 
 import { Layout } from "@/components/layout";
+import { AlumniFormDialog } from "@/components/alumni-form-dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,6 +17,8 @@ export default function AlumniDetail() {
   const id = parseInt(params.id || "0", 10);
   
   const { data: alumni, isLoading } = useGetAlumni(id);
+  const { data: me } = useGetMe();
+  const [editOpen, setEditOpen] = useState(false);
 
   if (isLoading || !alumni) {
     return (
@@ -41,11 +45,23 @@ export default function AlumniDetail() {
       <div className="bg-primary text-primary-foreground border-b border-primary-foreground/10 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/hero-bg.png')] opacity-10 bg-cover bg-center mix-blend-overlay"></div>
         <div className="container mx-auto px-4 py-12 max-w-4xl relative z-10">
-          <Button variant="ghost" asChild className="mb-8 -ml-4 text-primary-foreground/80 hover:text-white hover:bg-white/10">
-            <Link href="/alumni">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back to Directory
-            </Link>
-          </Button>
+          <div className="flex items-center justify-between mb-8">
+            <Button variant="ghost" asChild className="-ml-4 text-primary-foreground/80 hover:text-white hover:bg-white/10">
+              <Link href="/alumni">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Directory
+              </Link>
+            </Button>
+            {me?.isAdmin && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white/10 text-white border-white/30 hover:bg-white/20 backdrop-blur-sm"
+                onClick={() => setEditOpen(true)}
+              >
+                <Pencil className="w-4 h-4 mr-2" /> Edit Profile
+              </Button>
+            )}
+          </div>
 
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8 text-center md:text-left">
             <Avatar className="h-40 w-40 border-4 border-white/20 shadow-2xl">
@@ -113,6 +129,13 @@ export default function AlumniDetail() {
           </CardContent>
         </Card>
       </div>
+
+      <AlumniFormDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initial={alumni}
+        onSuccess={() => setEditOpen(false)}
+      />
     </Layout>
   );
 }

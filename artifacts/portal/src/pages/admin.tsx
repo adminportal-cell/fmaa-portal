@@ -1,20 +1,17 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { ShieldAlert, Plus, Trash2, Edit, Save, X, MoreHorizontal, UserCog } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import { format } from "date-fns";
 import {
   useGetMe,
-  useListResources, useCreateResource, useUpdateResource, useDeleteResource,
-  useListAlumni, useCreateAlumni, useUpdateAlumni, useDeleteAlumni,
   useListMembers, useUpdateMember,
   useListApprovedMembers, useAddApprovedMembers, useDeleteApprovedMember,
-  ResourceCategory, MemberRole, MembershipTier
+  MemberRole, MembershipTier,
 } from "@workspace/api-client-react";
 import { queryClient } from "@/lib/queryClient";
 
 import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,13 +19,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-
-// Forms would normally use react-hook-form + zod here, but for brevity in this admin view we'll use state
-// since it's a comprehensive CRUD interface. In a full production app, each form would be its own component.
 
 export default function Admin() {
   const { data: me, isLoading: meLoading } = useGetMe();
@@ -59,33 +51,25 @@ export default function Admin() {
       <div className="bg-primary text-primary-foreground py-10">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl font-serif font-bold">Admin Console</h1>
-          <p className="text-primary-foreground/80 mt-2">Manage resources, alumni profiles, and members.</p>
+          <p className="text-primary-foreground/80 mt-2">
+            Manage member access and accounts. To edit content, visit the live pages (editing controls appear when you're signed in as admin).
+          </p>
         </div>
       </div>
       
       <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="resources" className="w-full">
+        <Tabs defaultValue="approved" className="w-full">
           <TabsList className="mb-8 bg-muted/50 p-1">
-            <TabsTrigger value="resources">Resources</TabsTrigger>
-            <TabsTrigger value="alumni">Alumni</TabsTrigger>
-            <TabsTrigger value="members">Members</TabsTrigger>
             <TabsTrigger value="approved">Approved Emails</TabsTrigger>
+            <TabsTrigger value="members">Members</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="resources" className="space-y-6">
-            <ResourcesManager />
-          </TabsContent>
-
-          <TabsContent value="alumni" className="space-y-6">
-            <AlumniManager />
+          <TabsContent value="approved" className="space-y-6">
+            <ApprovedMembersManager />
           </TabsContent>
 
           <TabsContent value="members" className="space-y-6">
             <MembersManager />
-          </TabsContent>
-
-          <TabsContent value="approved" className="space-y-6">
-            <ApprovedMembersManager />
           </TabsContent>
         </Tabs>
       </div>
@@ -93,297 +77,7 @@ export default function Admin() {
   );
 }
 
-function ResourcesManager() {
-  const { toast } = useToast();
-  const { data: resources, isLoading } = useListResources();
-  const createResource = useCreateResource();
-  const deleteResource = useDeleteResource();
-  
-  const [isOpen, setIsOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    title: "", slug: "", category: "technical" as ResourceCategory, 
-    summary: "", content: "", authorName: "", isPremium: false,
-    coverImageUrl: "", fileUrl: "", readingMinutes: 5
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    createResource.mutate({ data: formData }, {
-      onSuccess: () => {
-        toast({ title: "Resource created successfully" });
-        queryClient.invalidateQueries({ queryKey: ["/api/resources"] });
-        setIsOpen(false);
-        setFormData({
-          title: "", slug: "", category: "technical", summary: "", content: "", 
-          authorName: "", isPremium: false, coverImageUrl: "", fileUrl: "", readingMinutes: 5
-        });
-      }
-    });
-  };
-
-  const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this resource?")) {
-      deleteResource.mutate({ id }, {
-        onSuccess: () => {
-          toast({ title: "Resource deleted" });
-          queryClient.invalidateQueries({ queryKey: ["/api/resources"] });
-        }
-      });
-    }
-  };
-
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Resource Library</CardTitle>
-        </div>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm"><Plus className="w-4 h-4 mr-2" /> Add Resource</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create New Resource</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Title</Label>
-                  <Input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-')})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Category</Label>
-                  <Select value={formData.category} onValueChange={v => setFormData({...formData, category: v as ResourceCategory})}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cv">CV</SelectItem>
-                      <SelectItem value="cover_letter">Cover Letter</SelectItem>
-                      <SelectItem value="technical">Technical</SelectItem>
-                      <SelectItem value="recruiting">Recruiting</SelectItem>
-                      <SelectItem value="alumni_insight">Insight</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Summary (Short description)</Label>
-                <Textarea required value={formData.summary} onChange={e => setFormData({...formData, summary: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <Label>Content (Markdown)</Label>
-                <Textarea required className="min-h-[200px] font-mono text-sm" value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Author Name</Label>
-                  <Input required value={formData.authorName} onChange={e => setFormData({...formData, authorName: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Reading Minutes</Label>
-                  <Input type="number" required value={formData.readingMinutes} onChange={e => setFormData({...formData, readingMinutes: parseInt(e.target.value) || 0})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Cover Image URL (Optional)</Label>
-                  <Input value={formData.coverImageUrl} onChange={e => setFormData({...formData, coverImageUrl: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>File URL (Optional)</Label>
-                  <Input value={formData.fileUrl} onChange={e => setFormData({...formData, fileUrl: e.target.value})} />
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 pt-2">
-                <Checkbox id="premium" checked={formData.isPremium} onCheckedChange={c => setFormData({...formData, isPremium: !!c})} />
-                <Label htmlFor="premium" className="font-semibold text-accent">Premium Resource (Lock content)</Label>
-              </div>
-              <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={createResource.isPending}>
-                  {createResource.isPending ? "Saving..." : "Create Resource"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? <Skeleton className="h-64" /> : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Access</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {resources?.map(resource => (
-                <TableRow key={resource.id}>
-                  <TableCell className="font-medium">{resource.title}</TableCell>
-                  <TableCell><Badge variant="outline">{resource.category}</Badge></TableCell>
-                  <TableCell>
-                    {resource.isPremium ? <Badge className="bg-accent/20 text-accent hover:bg-accent/20">Premium</Badge> : <Badge variant="secondary">Free</Badge>}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{format(new Date(resource.createdAt), "MMM d, yyyy")}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(resource.id)} className="text-destructive hover:bg-destructive/10">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {resources?.length === 0 && (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No resources found</TableCell></TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function AlumniManager() {
-  const { toast } = useToast();
-  const { data: alumni, isLoading } = useListAlumni();
-  const createAlumni = useCreateAlumni();
-  const deleteAlumni = useDeleteAlumni();
-  
-  const [isOpen, setIsOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "", role: "", company: "", industry: "Investment Banking", 
-    gradYear: 2024, insight: "", headshotUrl: "", linkedinUrl: "", location: ""
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    createAlumni.mutate({ data: formData }, {
-      onSuccess: () => {
-        toast({ title: "Alumni created successfully" });
-        queryClient.invalidateQueries({ queryKey: ["/api/alumni"] });
-        setIsOpen(false);
-        setFormData({
-          name: "", role: "", company: "", industry: "Investment Banking", 
-          gradYear: 2024, insight: "", headshotUrl: "", linkedinUrl: "", location: ""
-        });
-      }
-    });
-  };
-
-  const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this profile?")) {
-      deleteAlumni.mutate({ id }, {
-        onSuccess: () => {
-          toast({ title: "Profile deleted" });
-          queryClient.invalidateQueries({ queryKey: ["/api/alumni"] });
-        }
-      });
-    }
-  };
-
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Alumni Directory</CardTitle>
-        </div>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm"><Plus className="w-4 h-4 mr-2" /> Add Alumni</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create Alumni Profile</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Name</Label>
-                  <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Role</Label>
-                  <Input required value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Company</Label>
-                  <Input required value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Industry</Label>
-                  <Input required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Graduation Year</Label>
-                  <Input type="number" required value={formData.gradYear} onChange={e => setFormData({...formData, gradYear: parseInt(e.target.value) || 2020})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Location</Label>
-                  <Input value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Insight (Markdown)</Label>
-                <Textarea required className="min-h-[150px]" value={formData.insight} onChange={e => setFormData({...formData, insight: e.target.value})} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Headshot URL (Optional)</Label>
-                  <Input value={formData.headshotUrl} onChange={e => setFormData({...formData, headshotUrl: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <Label>LinkedIn URL (Optional)</Label>
-                  <Input value={formData.linkedinUrl} onChange={e => setFormData({...formData, linkedinUrl: e.target.value})} />
-                </div>
-              </div>
-              <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={createAlumni.isPending}>
-                  {createAlumni.isPending ? "Saving..." : "Create Profile"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? <Skeleton className="h-64" /> : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Role & Company</TableHead>
-                <TableHead>Industry</TableHead>
-                <TableHead>Class</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {alumni?.map(profile => (
-                <TableRow key={profile.id}>
-                  <TableCell className="font-medium">{profile.name}</TableCell>
-                  <TableCell>
-                    {profile.role} <span className="text-muted-foreground">at</span> {profile.company}
-                  </TableCell>
-                  <TableCell><Badge variant="outline">{profile.industry}</Badge></TableCell>
-                  <TableCell>{profile.gradYear}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(profile.id)} className="text-destructive hover:bg-destructive/10">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {alumni?.length === 0 && (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No alumni found</TableCell></TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+/* ─── Approved Members Manager ────────────────────────────────────── */
 
 function ApprovedMembersManager() {
   const { toast } = useToast();
@@ -392,20 +86,18 @@ function ApprovedMembersManager() {
   const deleteEmail = useDeleteApprovedMember();
 
   const [emailsInput, setEmailsInput] = useState("");
-  const [note, setNote] = useState("");
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!emailsInput.trim()) return;
     addEmails.mutate(
-      { data: { emails: emailsInput, note: note || undefined } },
+      { data: { emails: emailsInput } },
       {
         onSuccess: (res) => {
           toast({ title: `Added ${res.added} approved email${res.added === 1 ? "" : "s"}` });
           queryClient.invalidateQueries({ queryKey: ["/api/admin/approved-members"] });
           queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
           setEmailsInput("");
-          setNote("");
         },
         onError: (err: Error) => {
           toast({ title: "Failed to add emails", description: err.message, variant: "destructive" });
@@ -432,11 +124,7 @@ function ApprovedMembersManager() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Add Approved Emails</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            Paste one or more emails (separated by commas, spaces or new lines).
-            Anyone who signs in with an email on this list automatically gets Premium access.
-          </p>
+          <CardTitle>Grant Portal Access</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAdd} className="space-y-4">
@@ -450,17 +138,9 @@ function ApprovedMembersManager() {
                 onChange={(e) => setEmailsInput(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
-              <Label>Note (optional)</Label>
-              <Input
-                placeholder="e.g. 2026 S1 paid intake"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-              />
-            </div>
             <div className="flex justify-end">
               <Button type="submit" disabled={addEmails.isPending}>
-                {addEmails.isPending ? "Adding..." : "Add to approved list"}
+                {addEmails.isPending ? "Adding..." : "Grant access"}
               </Button>
             </div>
           </form>
@@ -469,18 +149,19 @@ function ApprovedMembersManager() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Approved Member Emails ({approved?.length ?? 0})</CardTitle>
+          <CardTitle>Approved Emails ({approved?.length ?? 0})</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            These email addresses will receive Premium membership automatically on sign-in.
+          </p>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <Skeleton className="h-64" />
+            <Skeleton className="h-48" />
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Email</TableHead>
-                  <TableHead>Note</TableHead>
-                  <TableHead>Added by</TableHead>
                   <TableHead>Added</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -489,27 +170,26 @@ function ApprovedMembersManager() {
                 {approved?.map((row) => (
                   <TableRow key={row.email}>
                     <TableCell className="font-mono text-sm">{row.email}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{row.note ?? "-"}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{row.addedBy ?? "-"}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-sm">
                       {format(new Date(row.createdAt), "MMM d, yyyy")}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemove(row.email)}
+                        size="sm"
                         className="text-destructive hover:bg-destructive/10"
+                        onClick={() => handleRemove(row.email)}
+                        disabled={deleteEmail.isPending}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        Remove
                       </Button>
                     </TableCell>
                   </TableRow>
                 ))}
                 {approved?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      No approved emails yet. Paste some above to start verifying members.
+                    <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                      No approved emails yet. Add some above to grant access.
                     </TableCell>
                   </TableRow>
                 )}
@@ -522,6 +202,8 @@ function ApprovedMembersManager() {
   );
 }
 
+/* ─── Members Manager ─────────────────────────────────────────────── */
+
 function MembersManager() {
   const { toast } = useToast();
   const { data: members, isLoading } = useListMembers();
@@ -530,50 +212,57 @@ function MembersManager() {
   const handleRoleChange = (id: string, role: MemberRole) => {
     updateMember.mutate({ id, data: { role } }, {
       onSuccess: () => {
-        toast({ title: "Member role updated" });
-        queryClient.invalidateQueries({ queryKey: ["/api/members"] });
-      }
+        toast({ title: "Role updated" });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      },
     });
   };
 
   const handleTierChange = (id: string, tier: MembershipTier) => {
     updateMember.mutate({ id, data: { tier } }, {
       onSuccess: () => {
-        toast({ title: "Membership tier updated" });
-        queryClient.invalidateQueries({ queryKey: ["/api/members"] });
-      }
+        toast({ title: "Tier updated" });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      },
     });
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Member Directory</CardTitle>
+        <CardTitle>Members ({members?.length ?? 0})</CardTitle>
+        <p className="text-sm text-muted-foreground mt-1">All signed-up portal members. Adjust roles and membership tiers here.</p>
       </CardHeader>
       <CardContent>
-        {isLoading ? <Skeleton className="h-64" /> : (
+        {isLoading ? (
+          <Skeleton className="h-64" />
+        ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name / Email</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Joined</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Tier</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {members?.map(member => (
+              {members?.map((member) => (
                 <TableRow key={member.id}>
-                  <TableCell>
-                    <div className="font-medium">{member.name}</div>
-                    <div className="text-sm text-muted-foreground">{member.email}</div>
+                  <TableCell className="font-medium">
+                    {member.name || <span className="text-muted-foreground italic">No name</span>}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className="text-muted-foreground text-sm">{member.email}</TableCell>
+                  <TableCell className="text-muted-foreground text-sm">
                     {format(new Date(member.createdAt), "MMM d, yyyy")}
                   </TableCell>
                   <TableCell>
-                    <Select value={member.role} onValueChange={v => handleRoleChange(member.id, v as MemberRole)}>
-                      <SelectTrigger className="h-8 w-32">
+                    <Select
+                      value={member.role}
+                      onValueChange={(v) => handleRoleChange(member.id, v as MemberRole)}
+                    >
+                      <SelectTrigger className={`w-28 h-8 font-medium text-xs border-0 ${member.role === "admin" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : "bg-muted text-muted-foreground"}`}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -583,8 +272,11 @@ function MembersManager() {
                     </Select>
                   </TableCell>
                   <TableCell>
-                    <Select value={member.tier} onValueChange={v => handleTierChange(member.id, v as MembershipTier)}>
-                      <SelectTrigger className="h-8 w-32">
+                    <Select
+                      value={member.tier}
+                      onValueChange={(v) => handleTierChange(member.id, v as MembershipTier)}
+                    >
+                      <SelectTrigger className={`w-28 h-8 font-medium text-xs border-0 ${member.tier === "premium" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-muted text-muted-foreground"}`}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -596,10 +288,27 @@ function MembersManager() {
                 </TableRow>
               ))}
               {members?.length === 0 && (
-                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No members found</TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    No members have signed up yet.
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>
+        )}
+        {members && members.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-3 pt-4 border-t">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+              {members.filter(m => m.tier === "premium").length} Premium
+            </span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+              {members.filter(m => m.tier === "standard").length} Standard
+            </span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+              {members.filter(m => m.role === "admin").length} Admin
+            </span>
+          </div>
         )}
       </CardContent>
     </Card>

@@ -22,6 +22,14 @@ export const ResourceCategory = {
   alumni_insight: 'alumni_insight',
   technical: 'technical',
   recruiting: 'recruiting',
+  behavioural_guide: 'behavioural_guide',
+  accounting: 'accounting',
+  valuation: 'valuation',
+  dcf: 'dcf',
+  lbo: 'lbo',
+  'm&a': 'm&a',
+  excel: 'excel',
+  miscellaneous: 'miscellaneous',
 } as const;
 
 export type MembershipTier = typeof MembershipTier[keyof typeof MembershipTier];
@@ -75,7 +83,7 @@ export interface Resource {
 export interface ResourceInput {
   /** @minLength 1 */
   title: string;
-  category: ResourceCategory;
+  category: string;
   summary: string;
   content: string;
   tags?: string[];
@@ -83,11 +91,12 @@ export interface ResourceInput {
   coverImageUrl?: string;
   readingMinutes?: number;
   isPremium?: boolean;
+  authorName?: string;
 }
 
 export interface ResourceUpdate {
   title?: string;
-  category?: ResourceCategory;
+  category?: string;
   summary?: string;
   content?: string;
   tags?: string[];
@@ -193,6 +202,17 @@ export interface AddApprovedMembersInput {
 export interface AddApprovedMembersResult {
   added: number;
   emails: string[];
+}
+
+export interface ViewResult {
+  resourceId: number;
+  firstViewedAt: string;
+  lastViewedAt: string;
+}
+
+export interface UserProgress {
+  viewedResourceIds: number[];
+  recentlyViewed: Resource[];
 }
 
 export type ListResourcesParams = {

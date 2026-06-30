@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
-import { db, resourcesTable } from "@workspace/db";
+import { db, resourcesTable, resourceViewsTable } from "@workspace/db";
 import { requireAuth, requireAdmin } from "../middlewares/requireAuth";
 import { toResource, slugify } from "../lib/serializers";
 import {
@@ -60,6 +60,38 @@ router.get("/resources/:id", requireAuth, async (req, res): Promise<void> => {
   res.json(toResource(r, { canAccessPremium: premium, includeContent: true }));
 });
 
+router.post("/resources/:id/view", requireAuth, async (req, res): Promise<void> => {
+  const id = parseInt(req.params["id"] as string, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid resource id" });
+    return;
+  }
+  const userId = req.currentUser!.id;
+  const [resource] = await db
+    .select({ id: resourcesTable.id })
+    .from(resourcesTable)
+    .where(eq(resourcesTable.id, id))
+    .limit(1);
+  if (!resource) {
+    res.status(404).json({ error: "Resource not found" });
+    return;
+  }
+  const now = new Date();
+  const [row] = await db
+    .insert(resourceViewsTable)
+    .values({ userId, resourceId: id, firstViewedAt: now, lastViewedAt: now })
+    .onConflictDoUpdate({
+      target: [resourceViewsTable.userId, resourceViewsTable.resourceId],
+      set: { lastViewedAt: now },
+    })
+    .returning();
+  res.json({
+    resourceId: row!.resourceId,
+    firstViewedAt: row!.firstViewedAt.toISOString(),
+    lastViewedAt: row!.lastViewedAt.toISOString(),
+  });
+});
+
 router.post("/resources", requireAuth, requireAdmin, async (req, res): Promise<void> => {
   const parsed = CreateResourceBody.safeParse(req.body);
   if (!parsed.success) {
@@ -87,7 +119,7 @@ router.post("/resources", requireAuth, requireAdmin, async (req, res): Promise<v
       coverImageUrl: data.coverImageUrl ?? null,
       readingMinutes: data.readingMinutes ?? null,
       isPremium: data.isPremium ?? false,
-      authorName: req.currentUser?.name ?? "FMAA",
+      authorName: data.authorName ?? req.currentUser?.name ?? "FMAA",
     })
     .returning();
   res.status(201).json(toResource(row!));

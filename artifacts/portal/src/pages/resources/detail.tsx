@@ -1,11 +1,13 @@
+import { useEffect, useState } from "react";
 import { useParams, Link } from "wouter";
-import { ArrowLeft, BookOpen, Briefcase, FileText, Lock, Clock, Calendar, Download } from "lucide-react";
+import { ArrowLeft, FileText, Lock, Clock, Calendar, Download, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useGetResource, useGetMe } from "@workspace/api-client-react";
+import { useGetResource, useGetMe, useMarkResourceViewed } from "@workspace/api-client-react";
 
 import { Layout } from "@/components/layout";
+import { ResourceFormDialog } from "@/components/resource-form-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,6 +27,14 @@ export default function ResourceDetail() {
   
   const { data: me } = useGetMe();
   const { data: resource, isLoading } = useGetResource(id);
+  const markViewed = useMarkResourceViewed();
+  const [editOpen, setEditOpen] = useState(false);
+
+  useEffect(() => {
+    if (resource && id) {
+      markViewed.mutate({ id });
+    }
+  }, [resource?.id]);
 
   if (isLoading || !resource) {
     return (
@@ -48,11 +58,18 @@ export default function ResourceDetail() {
       {/* Hero Section */}
       <div className="bg-muted/30 border-b border-border">
         <div className="container mx-auto px-4 py-12 max-w-4xl">
-          <Button variant="ghost" asChild className="mb-6 -ml-4 text-muted-foreground hover:text-foreground">
-            <Link href="/resources">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back to Resources
-            </Link>
-          </Button>
+          <div className="flex items-center justify-between mb-6">
+            <Button variant="ghost" asChild className="-ml-4 text-muted-foreground hover:text-foreground">
+              <Link href="/resources">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Resources
+              </Link>
+            </Button>
+            {me?.isAdmin && (
+              <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                <Pencil className="w-4 h-4 mr-2" /> Edit Resource
+              </Button>
+            )}
+          </div>
 
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
@@ -112,7 +129,6 @@ export default function ResourceDetail() {
 
           {isLocked ? (
             <>
-              {/* Show preview of content if locked */}
               <div className="relative">
                 <div className="absolute bottom-0 left-0 w-full h-64 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none" />
                 <div className="opacity-40 select-none">
@@ -122,7 +138,6 @@ export default function ResourceDetail() {
                 </div>
               </div>
 
-              {/* Premium Gate */}
               <Card className="mt-8 border-accent/20 bg-accent/5 shadow-md relative z-20">
                 <CardContent className="p-8 text-center">
                   <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -143,7 +158,7 @@ export default function ResourceDetail() {
           ) : (
             <>
               {resource.fileUrl && (
-                <div className="mb-8 p-6 bg-muted/30 border border-border rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="not-prose mb-8 p-6 bg-card border border-border rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
                       <FileText className="w-6 h-6" />
@@ -154,7 +169,12 @@ export default function ResourceDetail() {
                     </div>
                   </div>
                   <Button asChild>
-                    <a href={resource.fileUrl} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={resource.fileUrl}
+                      download={resource.fileUrl.startsWith("data:") ? "download" : undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       <Download className="w-4 h-4 mr-2" /> Download
                     </a>
                   </Button>
@@ -168,6 +188,13 @@ export default function ResourceDetail() {
           )}
         </div>
       </div>
+
+      <ResourceFormDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initial={resource}
+        onSuccess={() => setEditOpen(false)}
+      />
     </Layout>
   );
 }

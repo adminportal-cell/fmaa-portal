@@ -1,10 +1,10 @@
 import { Link } from "wouter";
-import { ArrowRight, BookOpen, Briefcase, FileText, ChevronRight } from "lucide-react";
+import { ArrowRight, BookOpen, Briefcase, FileText, ChevronRight, Clock } from "lucide-react";
 import { format } from "date-fns";
-import { useGetMe, useGetDashboardSummary } from "@workspace/api-client-react";
+import { useGetMe, useGetDashboardSummary, useGetMyProgress } from "@workspace/api-client-react";
 
 import { Layout } from "@/components/layout";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,6 +29,7 @@ const categoryLabels: Record<string, string> = {
 export default function Portal() {
   const { data: me, isLoading: meLoading } = useGetMe();
   const { data: summary, isLoading: summaryLoading } = useGetDashboardSummary();
+  const { data: progress } = useGetMyProgress();
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -45,7 +46,7 @@ export default function Portal() {
             <Skeleton className="h-10 w-64" />
             <Skeleton className="h-5 w-96" />
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-3 gap-4">
             {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
           </div>
           <div className="grid lg:grid-cols-3 gap-8">
@@ -62,6 +63,8 @@ export default function Portal() {
       </Layout>
     );
   }
+
+  const recentlyViewed = progress?.recentlyViewed ?? [];
 
   return (
     <Layout>
@@ -80,29 +83,62 @@ export default function Portal() {
         </section>
 
         {/* Stats Grid */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="shadow-sm">
-            <CardContent className="p-6">
-              <div className="text-3xl font-bold text-primary mb-1">{summary.totalResources}</div>
-              <div className="text-sm font-medium text-muted-foreground">Total Resources</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-sm">
-            <CardContent className="p-6">
-              <div className="text-3xl font-bold text-primary mb-1">{summary.totalAlumni}</div>
-              <div className="text-sm font-medium text-muted-foreground">Alumni Profiles</div>
-            </CardContent>
-          </Card>
-          
-          {summary.categoryCounts.slice(0, 2).map(cat => (
-            <Card key={cat.category} className="shadow-sm hidden md:block">
-              <CardContent className="p-6">
-                <div className="text-3xl font-bold text-primary mb-1">{cat.count}</div>
-                <div className="text-sm font-medium text-muted-foreground">{categoryLabels[cat.category] || cat.category}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </section>
+        {(() => {
+          const TECH_CATS = new Set(["accounting", "valuation", "dcf", "lbo", "m&a", "excel", "miscellaneous"]);
+          const totalTechnical = (summary.categoryCounts ?? [])
+            .filter(c => TECH_CATS.has(c.category))
+            .reduce((sum, c) => sum + c.count, 0);
+          return (
+            <section className="grid grid-cols-3 gap-4">
+              <Card className="shadow-sm">
+                <CardContent className="p-6">
+                  <div className="text-3xl font-bold text-primary mb-1">{summary.totalResources}</div>
+                  <div className="text-sm font-medium text-muted-foreground">Total Resources</div>
+                </CardContent>
+              </Card>
+              <Card className="shadow-sm">
+                <CardContent className="p-6">
+                  <div className="text-3xl font-bold text-primary mb-1">{summary.totalAlumni}</div>
+                  <div className="text-sm font-medium text-muted-foreground">Alumni Profiles</div>
+                </CardContent>
+              </Card>
+              <Card className="shadow-sm">
+                <CardContent className="p-6">
+                  <div className="text-3xl font-bold text-primary mb-1">{totalTechnical}</div>
+                  <div className="text-sm font-medium text-muted-foreground">Technical Resources</div>
+                </CardContent>
+              </Card>
+            </section>
+          );
+        })()}
+
+        {/* Recently Viewed */}
+        {recentlyViewed.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <Clock className="w-5 h-5 text-muted-foreground" />
+              <h2 className="text-xl font-serif font-bold">Continue where you left off</h2>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
+              {recentlyViewed.slice(0, 5).map(resource => (
+                <Link key={resource.id} href={`/resources/${resource.id}`}>
+                  <Card className="hover-elevate cursor-pointer transition-shadow flex-shrink-0 w-60">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-1 mb-2 text-xs text-muted-foreground">
+                        {categoryIcons[resource.category]}
+                        <span>{categoryLabels[resource.category] || resource.category}</span>
+                      </div>
+                      <p className="font-semibold text-sm leading-snug line-clamp-2 text-foreground">{resource.title}</p>
+                      {resource.isPremium && (
+                        <Badge variant="secondary" className="mt-2 bg-accent/10 text-accent border-accent/20 text-xs">Premium</Badge>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className="grid lg:grid-cols-3 gap-8">
           

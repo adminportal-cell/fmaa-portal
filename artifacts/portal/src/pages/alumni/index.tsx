@@ -1,29 +1,37 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Search, MapPin, Building2, GraduationCap, Linkedin, ChevronRight, Briefcase } from "lucide-react";
-import { useListAlumni, useListIndustries } from "@workspace/api-client-react";
+import { Search, MapPin, GraduationCap, ChevronRight, Briefcase, Plus, Pencil, Trash2 } from "lucide-react";
+import { useListAlumni, useListIndustries, useDeleteAlumni, useGetMe, AlumniProfile } from "@workspace/api-client-react";
+import { queryClient } from "@/lib/queryClient";
 
 import { Layout } from "@/components/layout";
+import { AlumniFormDialog } from "@/components/alumni-form-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AlumniList() {
+  const { toast } = useToast();
+  const { data: me } = useGetMe();
+  const isAdmin = me?.isAdmin ?? false;
+
   const [search, setSearch] = useState("");
   const [industry, setIndustry] = useState<string>("all");
+  const [formOpen, setFormOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<AlumniProfile | undefined>(undefined);
 
   const queryParams = industry !== "all" ? { industry } : {};
   
   const { data: alumni, isLoading: alumniLoading } = useListAlumni(queryParams, {
-    query: {
-      queryKey: ["alumni", queryParams] as any
-    }
+    query: { queryKey: ["alumni", queryParams] as any }
   });
 
   const { data: industries, isLoading: industriesLoading } = useListIndustries();
+  const deleteAlumni = useDeleteAlumni();
 
   const filteredAlumni = alumni?.filter(a => 
     !search || 
@@ -32,8 +40,42 @@ export default function AlumniList() {
     a.role.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleDelete = (e: React.MouseEvent, id: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm("Delete this alumni profile? This cannot be undone.")) return;
+    deleteAlumni.mutate({ id }, {
+      onSuccess: () => {
+        toast({ title: "Profile deleted" });
+        queryClient.invalidateQueries({ queryKey: ["/api/alumni"] });
+      },
+      onError: (err: Error) => toast({ title: "Failed to delete", description: err.message, variant: "destructive" }),
+    });
+  };
+
+  const openEdit = (e: React.MouseEvent, alumnus: AlumniProfile) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditTarget(alumnus);
+    setFormOpen(true);
+  };
+
   return (
     <Layout>
+      {isAdmin && (
+        <div className="bg-primary/5 border-b border-primary/20">
+          <div className="container mx-auto px-4 py-3 max-w-6xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-sm text-primary font-medium">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              Admin — editing live
+            </div>
+            <Button size="sm" onClick={() => { setEditTarget(undefined); setFormOpen(true); }}>
+              <Plus className="w-4 h-4 mr-2" /> Add Alumni
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="bg-muted/30 border-b border-border">
         <div className="container mx-auto px-4 py-12 max-w-6xl text-center">
           <h1 className="text-4xl font-serif font-bold text-foreground mb-4">Alumni Directory</h1>
@@ -121,7 +163,27 @@ export default function AlumniList() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAlumni?.map((alumnus) => (
               <Link key={alumnus.id} href={`/alumni/${alumnus.id}`}>
-                <Card className="h-full hover-elevate transition-shadow cursor-pointer group flex flex-col">
+                <Card className="h-full hover-elevate transition-shadow cursor-pointer group flex flex-col relative">
+                  {isAdmin && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 bg-background/80 backdrop-blur-sm text-muted-foreground hover:text-foreground shadow-sm"
+                        onClick={(e) => openEdit(e, alumnus)}
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 bg-background/80 backdrop-blur-sm text-destructive hover:bg-destructive/10 shadow-sm"
+                        onClick={(e) => handleDelete(e, alumnus.id)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  )}
                   <CardContent className="p-6 flex-1 flex flex-col">
                     <div className="flex items-start gap-4 mb-4">
                       <Avatar className="h-16 w-16 border-2 border-border shadow-sm">
@@ -171,6 +233,12 @@ export default function AlumniList() {
           </div>
         )}
       </div>
+
+      <AlumniFormDialog
+        open={formOpen}
+        onOpenChange={(o) => { setFormOpen(o); if (!o) setEditTarget(undefined); }}
+        initial={editTarget}
+      />
     </Layout>
   );
 }

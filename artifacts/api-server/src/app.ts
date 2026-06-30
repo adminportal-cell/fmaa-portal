@@ -36,9 +36,9 @@ app.use(
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
 app.use(cors({ credentials: true, origin: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
+// Clerk auth must run BEFORE body parsers — it only reads headers/cookies and
+// must not wait 18+ seconds for a large base64 upload body to be consumed.
 app.use(
   clerkMiddleware((req) => ({
     publishableKey: publishableKeyFromHost(
@@ -47,6 +47,9 @@ app.use(
     ),
   })),
 );
+
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 app.use("/api", router);
 

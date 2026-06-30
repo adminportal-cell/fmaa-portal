@@ -23,15 +23,17 @@ import {
   DcfPage,
   LboPage,
   MAndAPage,
+  ExcelPage,
+  MiscellaneousPage,
 } from "@/pages/technicals/topic";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
-
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)
@@ -60,7 +62,7 @@ const clerkAppearance = {
     colorInput: "hsl(214 20% 90%)",
     colorInputForeground: "hsl(215 30% 17%)",
     colorNeutral: "hsl(214 20% 90%)",
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: "'Calibri', 'Candara', 'Segoe UI', Arial, sans-serif",
     borderRadius: "0.25rem",
   },
   elements: {
@@ -244,6 +246,16 @@ function ClerkProviderWithRoutes() {
 
           <Route path="/technicals/m-and-a">
             <SignedIn><MAndAPage /></SignedIn>
+            <SignedOut><Redirect to="/sign-in" /></SignedOut>
+          </Route>
+
+          <Route path="/technicals/excel">
+            <SignedIn><ExcelPage /></SignedIn>
+            <SignedOut><Redirect to="/sign-in" /></SignedOut>
+          </Route>
+
+          <Route path="/technicals/miscellaneous">
+            <SignedIn><MiscellaneousPage /></SignedIn>
             <SignedOut><Redirect to="/sign-in" /></SignedOut>
           </Route>
           

@@ -64,7 +64,6 @@ router.post(
       .values(emails.map((email) => ({ email, note, addedBy })))
       .onConflictDoNothing();
 
-    // Immediately upgrade any existing non-admin users whose email matches
     await db
       .update(usersTable)
       .set({ tier: "premium" })
@@ -93,7 +92,6 @@ router.delete(
       res.status(404).json({ error: "Approved member not found" });
       return;
     }
-    // Downgrade matching non-admin users (admins keep their tier)
     await db
       .update(usersTable)
       .set({ tier: "standard" })

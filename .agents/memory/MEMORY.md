@@ -1,0 +1,1 @@
+- [Resource category contract](resource-categories.md) — category lives in openapi ResourceCategory enum (DB is plain text); frontend categories.ts + technicals pages must only use enum values or API 400s.

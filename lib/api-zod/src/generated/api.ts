@@ -38,14 +38,14 @@ export const GetDashboardSummaryResponse = zod.object({
   "totalResources": zod.number(),
   "totalAlumni": zod.number(),
   "categoryCounts": zod.array(zod.object({
-  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting']),
+  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous']),
   "count": zod.number()
 })),
   "recentResources": zod.array(zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "slug": zod.string(),
-  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting']),
+  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous']),
   "summary": zod.string(),
   "content": zod.string(),
   "tags": zod.array(zod.string()).optional(),
@@ -77,7 +77,7 @@ export const GetDashboardSummaryResponse = zod.object({
  * @summary List resources, optionally filtered by category
  */
 export const ListResourcesQueryParams = zod.object({
-  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting']).optional(),
+  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous']).optional(),
   "q": zod.coerce.string().optional()
 })
 
@@ -85,7 +85,7 @@ export const ListResourcesResponseItem = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "slug": zod.string(),
-  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting']),
+  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous']),
   "summary": zod.string(),
   "content": zod.string(),
   "tags": zod.array(zod.string()).optional(),
@@ -108,14 +108,15 @@ export const ListResourcesResponse = zod.array(ListResourcesResponseItem)
 
 export const CreateResourceBody = zod.object({
   "title": zod.string().min(1),
-  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting']),
+  "category": zod.string(),
   "summary": zod.string(),
   "content": zod.string(),
   "tags": zod.array(zod.string()).optional(),
   "fileUrl": zod.string().optional(),
   "coverImageUrl": zod.string().optional(),
   "readingMinutes": zod.number().optional(),
-  "isPremium": zod.boolean().optional()
+  "isPremium": zod.boolean().optional(),
+  "authorName": zod.string().optional()
 })
 
 
@@ -130,7 +131,7 @@ export const GetResourceResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "slug": zod.string(),
-  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting']),
+  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous']),
   "summary": zod.string(),
   "content": zod.string(),
   "tags": zod.array(zod.string()).optional(),
@@ -153,7 +154,7 @@ export const UpdateResourceParams = zod.object({
 
 export const UpdateResourceBody = zod.object({
   "title": zod.string().optional(),
-  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting']).optional(),
+  "category": zod.string().optional(),
   "summary": zod.string().optional(),
   "content": zod.string().optional(),
   "tags": zod.array(zod.string()).optional(),
@@ -167,7 +168,7 @@ export const UpdateResourceResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "slug": zod.string(),
-  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting']),
+  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous']),
   "summary": zod.string(),
   "content": zod.string(),
   "tags": zod.array(zod.string()).optional(),
@@ -291,6 +292,44 @@ export const ListIndustriesResponseItem = zod.object({
   "count": zod.number()
 })
 export const ListIndustriesResponse = zod.array(ListIndustriesResponseItem)
+
+
+/**
+ * @summary Mark a resource as viewed by the current user
+ */
+export const MarkResourceViewedParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const MarkResourceViewedResponse = zod.object({
+  "resourceId": zod.number(),
+  "firstViewedAt": zod.coerce.date(),
+  "lastViewedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get the current user's resource viewing history
+ */
+export const GetMyProgressResponse = zod.object({
+  "viewedResourceIds": zod.array(zod.number()),
+  "recentlyViewed": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "slug": zod.string(),
+  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous']),
+  "summary": zod.string(),
+  "content": zod.string(),
+  "tags": zod.array(zod.string()).optional(),
+  "fileUrl": zod.string().nullish(),
+  "coverImageUrl": zod.string().nullish(),
+  "readingMinutes": zod.number().nullish(),
+  "isPremium": zod.boolean(),
+  "authorName": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
 
 
 /**

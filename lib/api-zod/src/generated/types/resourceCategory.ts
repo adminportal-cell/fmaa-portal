@@ -15,4 +15,12 @@ export const ResourceCategory = {
   alumni_insight: 'alumni_insight',
   technical: 'technical',
   recruiting: 'recruiting',
+  behavioural_guide: 'behavioural_guide',
+  accounting: 'accounting',
+  valuation: 'valuation',
+  dcf: 'dcf',
+  lbo: 'lbo',
+  'm&a': 'm&a',
+  excel: 'excel',
+  miscellaneous: 'miscellaneous',
 } as const;

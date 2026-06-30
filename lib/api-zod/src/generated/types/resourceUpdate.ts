@@ -5,11 +5,10 @@
  * FMAA Portal API
  * OpenAPI spec version: 0.1.0
  */
-import type { ResourceCategory } from './resourceCategory';
 
 export interface ResourceUpdate {
   title?: string;
-  category?: ResourceCategory;
+  category?: string;
   summary?: string;
   content?: string;
   tags?: string[];

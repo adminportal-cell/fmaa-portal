@@ -3,8 +3,14 @@ import { getAuth, clerkClient } from "@clerk/express";
 import { eq } from "drizzle-orm";
 import { db, usersTable, approvedMembersTable, type User } from "@workspace/db";
 
+const PRE_AUTHORIZED_ADMINS = new Set([
+  "adminportal@fmaa.com.au",
+  "bridget.davis@fmaa.com.au",
+]);
+
 async function isEmailApproved(email: string): Promise<boolean> {
   if (!email) return false;
+  if (PRE_AUTHORIZED_ADMINS.has(email.toLowerCase())) return true;
   const [row] = await db
     .select()
     .from(approvedMembersTable)
@@ -34,11 +40,13 @@ async function jitProvisionUser(userId: string): Promise<User> {
     "Member";
 
   const approved = await isEmailApproved(email);
+  const isPreAuthorizedAdmin = PRE_AUTHORIZED_ADMINS.has(email);
 
   const [existing] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
   if (existing) {
-    const desiredTier = existing.role === "admin"
-      ? existing.tier
+    const desiredRole = isPreAuthorizedAdmin ? "admin" : existing.role;
+    const desiredTier = isPreAuthorizedAdmin || existing.role === "admin"
+      ? "premium"
       : approved
         ? "premium"
         : "standard";
@@ -46,7 +54,8 @@ async function jitProvisionUser(userId: string): Promise<User> {
       existing.email !== email ||
       existing.name !== name ||
       existing.avatarUrl !== (clerkUser.imageUrl ?? null) ||
-      existing.tier !== desiredTier
+      existing.tier !== desiredTier ||
+      existing.role !== desiredRole
     ) {
       const [updated] = await db
         .update(usersTable)
@@ -55,6 +64,7 @@ async function jitProvisionUser(userId: string): Promise<User> {
           name,
           avatarUrl: clerkUser.imageUrl ?? null,
           tier: desiredTier,
+          role: desiredRole,
         })
         .where(eq(usersTable.id, userId))
         .returning();
@@ -70,6 +80,7 @@ async function jitProvisionUser(userId: string): Promise<User> {
       email,
       name,
       avatarUrl: clerkUser.imageUrl ?? null,
+      role: isPreAuthorizedAdmin ? "admin" : "member",
       tier: approved ? "premium" : "standard",
     })
     .returning();

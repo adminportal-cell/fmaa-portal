@@ -5,12 +5,11 @@
  * FMAA Portal API
  * OpenAPI spec version: 0.1.0
  */
-import type { ResourceCategory } from './resourceCategory';
 
 export interface ResourceInput {
   /** @minLength 1 */
   title: string;
-  category: ResourceCategory;
+  category: string;
   summary: string;
   content: string;
   tags?: string[];
@@ -18,4 +17,5 @@ export interface ResourceInput {
   coverImageUrl?: string;
   readingMinutes?: number;
   isPremium?: boolean;
+  authorName?: string;
 }

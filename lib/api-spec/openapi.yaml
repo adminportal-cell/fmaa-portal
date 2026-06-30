@@ -257,6 +257,45 @@ paths:
                 type: array
                 items: { $ref: "#/components/schemas/IndustryCount" }
 
+  /resources/{id}/view:
+    post:
+      operationId: markResourceViewed
+      tags: [resources]
+      summary: Mark a resource as viewed by the current user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ViewResult" }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /me/progress:
+    get:
+      operationId: getMyProgress
+      tags: [me]
+      summary: Get the current user's resource viewing history
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserProgress" }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
   /admin/members:
     get:
       operationId: listMembers
@@ -382,7 +421,7 @@ components:
 
     ResourceCategory:
       type: string
-      enum: [cv, cover_letter, alumni_insight, technical, recruiting]
+      enum: [cv, cover_letter, alumni_insight, technical, recruiting, behavioural_guide, accounting, valuation, dcf, lbo, "m&a", excel, miscellaneous]
 
     MembershipTier:
       type: string
@@ -431,7 +470,7 @@ components:
       required: [title, category, summary, content]
       properties:
         title: { type: string, minLength: 1 }
-        category: { $ref: "#/components/schemas/ResourceCategory" }
+        category: { type: string }
         summary: { type: string }
         content: { type: string }
         tags:
@@ -441,12 +480,13 @@ components:
         coverImageUrl: { type: string }
         readingMinutes: { type: integer }
         isPremium: { type: boolean }
+        authorName: { type: string }
 
     ResourceUpdate:
       type: object
       properties:
         title: { type: string }
-        category: { $ref: "#/components/schemas/ResourceCategory" }
+        category: { type: string }
         summary: { type: string }
         content: { type: string }
         tags:
@@ -575,3 +615,22 @@ components:
         emails:
           type: array
           items: { type: string }
+
+    ViewResult:
+      type: object
+      required: [resourceId, firstViewedAt, lastViewedAt]
+      properties:
+        resourceId: { type: integer }
+        firstViewedAt: { type: string, format: date-time }
+        lastViewedAt: { type: string, format: date-time }
+
+    UserProgress:
+      type: object
+      required: [viewedResourceIds, recentlyViewed]
+      properties:
+        viewedResourceIds:
+          type: array
+          items: { type: integer }
+        recentlyViewed:
+          type: array
+          items: { $ref: "#/components/schemas/Resource" }

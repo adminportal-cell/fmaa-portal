@@ -37,7 +37,9 @@ import type {
   MemberUpdate,
   Resource,
   ResourceInput,
-  ResourceUpdate
+  ResourceUpdate,
+  UserProgress,
+  ViewResult
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1078,6 +1080,153 @@ export function useListIndustries<TData = Awaited<ReturnType<typeof listIndustri
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getListIndustriesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getMarkResourceViewedUrl = (id: number,) => {
+
+
+
+
+  return `/api/resources/${id}/view`
+}
+
+/**
+ * @summary Mark a resource as viewed by the current user
+ */
+export const markResourceViewed = async (id: number, options?: RequestInit): Promise<ViewResult> => {
+
+  return customFetch<ViewResult>(getMarkResourceViewedUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getMarkResourceViewedMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markResourceViewed>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof markResourceViewed>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['markResourceViewed'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof markResourceViewed>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  markResourceViewed(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MarkResourceViewedMutationResult = NonNullable<Awaited<ReturnType<typeof markResourceViewed>>>
+
+    export type MarkResourceViewedMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Mark a resource as viewed by the current user
+ */
+export const useMarkResourceViewed = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markResourceViewed>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof markResourceViewed>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getMarkResourceViewedMutationOptions(options));
+    }
+
+export const getGetMyProgressUrl = () => {
+
+
+
+
+  return `/api/me/progress`
+}
+
+/**
+ * @summary Get the current user's resource viewing history
+ */
+export const getMyProgress = async ( options?: RequestInit): Promise<UserProgress> => {
+
+  return customFetch<UserProgress>(getGetMyProgressUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMyProgressQueryKey = () => {
+    return [
+    `/api/me/progress`
+    ] as const;
+    }
+
+
+export const getGetMyProgressQueryOptions = <TData = Awaited<ReturnType<typeof getMyProgress>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyProgress>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMyProgressQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyProgress>>> = ({ signal }) => getMyProgress({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMyProgress>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMyProgressQueryResult = NonNullable<Awaited<ReturnType<typeof getMyProgress>>>
+export type GetMyProgressQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get the current user's resource viewing history
+ */
+
+export function useGetMyProgress<TData = Awaited<ReturnType<typeof getMyProgress>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyProgress>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMyProgressQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
