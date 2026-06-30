@@ -54,6 +54,7 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
   const [fileUrlMode, setFileUrlMode] = useState<"url" | "upload">("url");
   const [uploadedFileName, setUploadedFileName] = useState("");
   const [uploadedDownloadName, setUploadedDownloadName] = useState("");
+  const [dragZone, setDragZone] = useState<string | null>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -138,9 +139,7 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
     insertMarkdown("![", "](https://)", "alt text");
   }
 
-  function handleContentFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  function processContentFile(file: File) {
     if (file.size > 20 * 1024 * 1024) {
       toast({ title: "File too large (max 20 MB)", variant: "destructive" });
       return;
@@ -152,10 +151,12 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
     };
     reader.readAsDataURL(file);
   }
-
-  function handleDownloadableFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleContentFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file) processContentFile(file);
+  }
+
+  function processDownloadableFile(file: File) {
     if (file.size > 20 * 1024 * 1024) {
       toast({ title: "File too large (max 20 MB)", variant: "destructive" });
       return;
@@ -167,10 +168,12 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
     };
     reader.readAsDataURL(file);
   }
-
-  function handleCoverFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleDownloadableFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file) processDownloadableFile(file);
+  }
+
+  function processCoverFile(file: File) {
     if (file.size > 5 * 1024 * 1024) {
       toast({ title: "Image too large (max 5 MB)", variant: "destructive" });
       return;
@@ -178,6 +181,23 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
     const reader = new FileReader();
     reader.onload = () => set("coverImageUrl", reader.result as string);
     reader.readAsDataURL(file);
+  }
+  function handleCoverFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) processCoverFile(file);
+  }
+
+  function dropProps(zone: string, onFile: (f: File) => void) {
+    return {
+      onDragOver: (e: React.DragEvent) => { e.preventDefault(); setDragZone(zone); },
+      onDragLeave: (e: React.DragEvent) => { e.preventDefault(); setDragZone(z => (z === zone ? null : z)); },
+      onDrop: (e: React.DragEvent) => {
+        e.preventDefault();
+        setDragZone(null);
+        const f = e.dataTransfer.files?.[0];
+        if (f) onFile(f);
+      },
+    };
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -334,10 +354,13 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
                 <p className="text-sm text-muted-foreground">
                   Upload a PDF, Word document, or any other file. Members will be able to download it directly.
                 </p>
-                <label className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-border rounded-md cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-colors">
+                <label
+                  {...dropProps("content", processContentFile)}
+                  className={`flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-md cursor-pointer transition-colors ${dragZone === "content" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50"}`}
+                >
                   <Upload className="w-6 h-6 text-muted-foreground" />
                   <span className="text-sm font-medium">
-                    {uploadedFileName || (form.fileUrl?.startsWith("data:") ? "File attached" : "Click to choose file")}
+                    {uploadedFileName || (form.fileUrl?.startsWith("data:") ? "File attached" : "Click to choose or drag and drop")}
                   </span>
                   <span className="text-xs text-muted-foreground">PDF, Word, Excel, PowerPoint — max 20 MB</span>
                   <input type="file" className="hidden" accept="*/*" onChange={handleContentFile} />
@@ -396,10 +419,13 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
                 placeholder="https://..."
               />
             ) : (
-              <label className="flex items-center gap-3 p-3 border border-dashed border-border rounded-md cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors">
+              <label
+                {...dropProps("cover", processCoverFile)}
+                className={`flex items-center gap-3 p-3 border border-dashed rounded-md cursor-pointer transition-colors ${dragZone === "cover" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/30"}`}
+              >
                 <Upload className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="text-sm text-muted-foreground">
-                  {form.coverImageUrl.startsWith("data:") ? "Image uploaded ✓" : "Click to upload image"}
+                  {form.coverImageUrl.startsWith("data:") ? "Image uploaded ✓" : "Click to upload or drag and drop"}
                 </span>
                 <input type="file" className="hidden" accept="image/*" onChange={handleCoverFile} />
               </label>
@@ -433,10 +459,13 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
                 placeholder="https://..."
               />
             ) : (
-              <label className="flex items-center gap-3 p-3 border border-dashed border-border rounded-md cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors">
+              <label
+                {...dropProps("download", processDownloadableFile)}
+                className={`flex items-center gap-3 p-3 border border-dashed rounded-md cursor-pointer transition-colors ${dragZone === "download" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/30"}`}
+              >
                 <Upload className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="text-sm text-muted-foreground">
-                  {uploadedDownloadName || (form.fileUrl.startsWith("data:") ? "File attached" : "Click to upload file")}
+                  {uploadedDownloadName || (form.fileUrl.startsWith("data:") ? "File attached" : "Click to upload or drag and drop")}
                 </span>
                 <input type="file" className="hidden" accept="*/*" onChange={handleDownloadableFile} />
               </label>

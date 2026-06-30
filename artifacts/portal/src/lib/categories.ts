@@ -12,10 +12,7 @@ export const KNOWN_CATEGORIES = [
 export const TECHNICAL_CATEGORIES = [
   { value: "accounting", label: "Accounting" },
   { value: "valuation", label: "Valuation" },
-  { value: "dcf", label: "DCF" },
-  { value: "lbo", label: "LBO" },
   { value: "m&a", label: "M&A" },
   { value: "excel", label: "Excel" },
   { value: "miscellaneous", label: "Miscellaneous" },
-  { value: "__custom__", label: "Custom…" },
 ];

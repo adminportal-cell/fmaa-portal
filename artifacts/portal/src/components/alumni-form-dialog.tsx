@@ -34,6 +34,7 @@ export function AlumniFormDialog({ open, onOpenChange, initial, onSuccess }: Pro
 
   const [form, setForm] = useState(blank());
   const [headshotPreview, setHeadshotPreview] = useState<string>("");
+  const [dragActive, setDragActive] = useState(false);
 
   useEffect(() => {
     if (initial) {
@@ -57,9 +58,7 @@ export function AlumniFormDialog({ open, onOpenChange, initial, onSuccess }: Pro
 
   const set = (k: string, v: unknown) => setForm(f => ({ ...f, [k]: v }));
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const processImage = (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
       toast({ title: "Image too large", description: "Please choose an image under 5 MB.", variant: "destructive" });
       return;
@@ -71,6 +70,11 @@ export function AlumniFormDialog({ open, onOpenChange, initial, onSuccess }: Pro
       setHeadshotPreview(dataUrl);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processImage(file);
   };
 
   const clearHeadshot = () => {
@@ -126,7 +130,12 @@ export function AlumniFormDialog({ open, onOpenChange, initial, onSuccess }: Pro
           {/* Headshot upload */}
           <div className="space-y-2">
             <Label>Headshot <span className="text-muted-foreground text-xs">(optional — JPG, PNG, GIF, WebP, SVG)</span></Label>
-            <div className="flex items-center gap-4">
+            <div
+              className={`flex items-center gap-4 rounded-md border-2 border-dashed p-2 -m-2 transition-colors ${dragActive ? "border-primary bg-primary/5" : "border-transparent"}`}
+              onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+              onDragLeave={(e) => { e.preventDefault(); setDragActive(false); }}
+              onDrop={(e) => { e.preventDefault(); setDragActive(false); const f = e.dataTransfer.files?.[0]; if (f) processImage(f); }}
+            >
               <Avatar className="h-20 w-20 border-2 border-border">
                 <AvatarImage src={headshotPreview || undefined} className="object-cover" />
                 <AvatarFallback className="text-2xl bg-muted">
@@ -161,7 +170,7 @@ export function AlumniFormDialog({ open, onOpenChange, initial, onSuccess }: Pro
                     <X className="w-4 h-4 mr-2" /> Remove
                   </Button>
                 )}
-                <p className="text-xs text-muted-foreground">Max 5 MB</p>
+                <p className="text-xs text-muted-foreground">Max 5 MB — or drag &amp; drop here</p>
               </div>
             </div>
           </div>
