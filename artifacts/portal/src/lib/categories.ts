@@ -5,7 +5,6 @@ export const KNOWN_CATEGORIES = [
   { value: "recruiting", label: "Recruiting" },
   { value: "alumni_insight", label: "Alumni Insight" },
   { value: "behavioural_guide", label: "Behavioural Guide" },
-  { value: "miscellaneous", label: "Miscellaneous" },
   { value: "__custom__", label: "Custom…" },
 ];
 
@@ -16,3 +15,20 @@ export const TECHNICAL_CATEGORIES = [
   { value: "excel", label: "Excel" },
   { value: "miscellaneous", label: "Miscellaneous" },
 ];
+
+// Single source of truth for which resource categories belong to the Technicals
+// section. These never appear in the general Resource Library — only under their
+// matching Technicals topic tile. Includes legacy dcf/lbo (topic pages still exist).
+export const TECHNICAL_CATEGORY_VALUES = [
+  "accounting",
+  "valuation",
+  "dcf",
+  "lbo",
+  "m&a",
+  "excel",
+  "miscellaneous",
+];
+
+export function isTechnicalCategory(category: string): boolean {
+  return TECHNICAL_CATEGORY_VALUES.includes(category);
+}

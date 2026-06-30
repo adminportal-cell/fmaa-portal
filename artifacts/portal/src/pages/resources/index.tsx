@@ -7,16 +7,13 @@ import { queryClient } from "@/lib/queryClient";
 
 import { Layout } from "@/components/layout";
 import { ResourceFormDialog } from "@/components/resource-form-dialog";
-import { KNOWN_CATEGORIES } from "@/lib/categories";
+import { KNOWN_CATEGORIES, isTechnicalCategory } from "@/lib/categories";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-
-// Categories that live in Technicals, not here
-const TECHNICAL_ONLY_CATS = new Set(["accounting", "valuation", "dcf", "lbo", "m&a", "excel"]);
 
 const CATEGORY_TILES = [
   { value: "cv",               label: "CV Templates",       Icon: FileText,     description: "Resume templates from top finance alumni." },
@@ -25,7 +22,6 @@ const CATEGORY_TILES = [
   { value: "recruiting",       label: "Recruiting",         Icon: Briefcase,    description: "Exclusive recruiting tips and strategies." },
   { value: "behavioural_guide",label: "Behavioural",        Icon: BookOpen,     description: "Behavioural interview frameworks." },
   { value: "technical",        label: "Technical Guides",   Icon: BookOpen,     description: "General technical reference materials." },
-  { value: "miscellaneous",    label: "Miscellaneous",      Icon: LayoutGrid,   description: "Other helpful resources." },
 ];
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -85,7 +81,7 @@ export default function ResourcesList() {
   };
 
   const resources = (allResources ?? [])
-    .filter(r => !TECHNICAL_ONLY_CATS.has(r.category))
+    .filter(r => !isTechnicalCategory(r.category))
     .filter(r => !activeCategory || r.category === activeCategory)
     .filter(r => !search || r.title.toLowerCase().includes(search.toLowerCase()) || r.summary.toLowerCase().includes(search.toLowerCase()));
 

@@ -3,6 +3,7 @@ import { ArrowRight, BookOpen, Briefcase, FileText, ChevronRight, Clock } from "
 import { format } from "date-fns";
 import { useGetMe, useGetDashboardSummary, useGetMyProgress } from "@workspace/api-client-react";
 
+import { isTechnicalCategory } from "@/lib/categories";
 import { Layout } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -84,9 +85,8 @@ export default function Portal() {
 
         {/* Stats Grid */}
         {(() => {
-          const TECH_CATS = new Set(["accounting", "valuation", "dcf", "lbo", "m&a", "excel", "miscellaneous"]);
           const totalTechnical = (summary.categoryCounts ?? [])
-            .filter(c => TECH_CATS.has(c.category))
+            .filter(c => isTechnicalCategory(c.category))
             .reduce((sum, c) => sum + c.count, 0);
           return (
             <section className="grid grid-cols-3 gap-4">
