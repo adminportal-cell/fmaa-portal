@@ -23,3 +23,9 @@ id = "n32EYScOFJcdAXvnqAm2x"
 uri = "file://exports/fmaa-portal.tar.gz"
 type = "unspecified"
 title = "FMAA Portal — source code"
+
+[[outputs]]
+id = "-yr-Onq_YIrOhqgpcMY-8"
+uri = "file://exports/fmaa-portal.zip"
+type = "unspecified"
+title = "FMAA Portal (source)"
