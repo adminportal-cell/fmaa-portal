@@ -237,7 +237,7 @@ export default function ResourcesList() {
         <div className="container mx-auto px-4 py-12 max-w-5xl text-center">
           <h1 className="text-4xl font-serif font-bold text-foreground mb-4">Resource Library</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            CV templates, cover letters, alumni insights and more — everything you need to break into top-tier finance.
+            CV templates, cover letters, alumni insights and more. Everything you need to break into top-tier finance.
           </p>
         </div>
       </div>
