@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Bold, Heading1, Heading2, Heading3, List, ListOrdered,
   Table as TableIcon, ImageIcon, Upload, FileText, Link as LinkIcon, Save,
@@ -30,7 +29,7 @@ interface Props {
 
 const blank = (defaultCategory?: string, defaultTag?: string) => ({
   title: "",
-  category: defaultCategory ?? "technical",
+  categories: defaultCategory ? [defaultCategory] : ([] as string[]),
   summary: "",
   content: "",
   authorName: "FMAA",
@@ -48,7 +47,6 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
   const isEdit = !!initial;
 
   const [form, setForm] = useState(blank(defaultCategory, defaultTag));
-  const [customCategory, setCustomCategory] = useState("");
   const [contentMode, setContentMode] = useState<"write" | "upload">("write");
   const [coverMode, setCoverMode] = useState<"url" | "upload">("url");
   const [fileUrlMode, setFileUrlMode] = useState<"url" | "upload">("url");
@@ -60,12 +58,9 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
   useEffect(() => {
     if (open) {
       if (initial) {
-        const cat = initial.category as string;
-        const isKnown = categories.some(c => c.value === cat && c.value !== "__custom__");
-        setCustomCategory(isKnown ? "" : cat);
         setForm({
           title: initial.title,
-          category: isKnown ? initial.category : "__custom__",
+          categories: initial.categories ?? [],
           summary: initial.summary,
           content: initial.content,
           authorName: initial.authorName,
@@ -83,7 +78,6 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
         setUploadedDownloadName(hasUploadedFile ? "File attached" : "");
       } else {
         setForm(blank(defaultCategory, defaultTag));
-        setCustomCategory("");
         setContentMode("write");
         setCoverMode("url");
         setFileUrlMode("url");
@@ -202,15 +196,14 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const effectiveCategory = form.category === "__custom__" ? customCategory.trim() : form.category;
-    if (form.category === "__custom__" && !customCategory.trim()) {
-      toast({ title: "Please enter a category name", variant: "destructive" });
+    if (form.categories.length === 0) {
+      toast({ title: "Please select at least one category", variant: "destructive" });
       return;
     }
     const readingMins = form.readingMinutes === "" ? undefined : Number(form.readingMinutes);
     const data = {
       title: form.title,
-      category: effectiveCategory,
+      categories: form.categories,
       summary: form.summary,
       content: form.content || " ",
       authorName: form.authorName,
@@ -255,29 +248,29 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Title</Label>
-              <Input required value={form.title} onChange={e => set("title", e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <Select value={form.category} onValueChange={v => set("category", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {categories.map(c => (
-                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {form.category === "__custom__" && (
-                <Input
-                  placeholder="e.g. Interview Prep"
-                  value={customCategory}
-                  onChange={e => setCustomCategory(e.target.value)}
-                  className="mt-2"
-                />
-              )}
+          <div className="space-y-2">
+            <Label>Title</Label>
+            <Input required value={form.title} onChange={e => set("title", e.target.value)} />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Categories <span className="text-muted-foreground text-xs">(select one or more)</span></Label>
+            <div className="grid grid-cols-2 gap-2 rounded-md border border-border p-3">
+              {categories.filter(c => c.value !== "__custom__").map(c => {
+                const checked = form.categories.includes(c.value);
+                return (
+                  <label key={c.value} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={v => set(
+                        "categories",
+                        v ? [...form.categories, c.value] : form.categories.filter(x => x !== c.value),
+                      )}
+                    />
+                    {c.label}
+                  </label>
+                );
+              })}
             </div>
           </div>
 

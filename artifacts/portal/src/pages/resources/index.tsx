@@ -98,7 +98,7 @@ export default function ResourcesList() {
     setActiveCategory(prev => (prev === value ? null : value));
   };
 
-  const base = allResources.filter(r => !isTechnicalCategory(r.category));
+  const base = allResources.filter(r => r.categories.some(c => !isTechnicalCategory(c)));
 
   const displayed = query
     ? base.filter(r =>
@@ -106,7 +106,7 @@ export default function ResourcesList() {
         r.summary.toLowerCase().includes(query.toLowerCase())
       )
     : activeCategory
-      ? base.filter(r => r.category === activeCategory)
+      ? base.filter(r => (r.categories as string[]).includes(activeCategory))
       : [];
 
   const renderList = () => {
@@ -191,10 +191,12 @@ export default function ResourcesList() {
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-4">
                       <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1.5 font-medium text-foreground bg-muted/50 px-2.5 py-1 rounded-md">
-                          {categoryIcons[resource.category]}
-                          {categoryLabels[resource.category] || resource.category}
-                        </span>
+                        {resource.categories.map(c => (
+                          <span key={c} className="flex items-center gap-1.5 font-medium text-foreground bg-muted/50 px-2.5 py-1 rounded-md">
+                            {categoryIcons[c]}
+                            {categoryLabels[c] || c}
+                          </span>
+                        ))}
                         <span>{resource.authorName}</span>
                         <span className="hidden sm:inline">&bull;</span>
                         <span>{format(new Date(resource.createdAt), "MMM d, yyyy")}</span>

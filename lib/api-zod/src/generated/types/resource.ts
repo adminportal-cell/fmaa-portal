@@ -11,7 +11,7 @@ export interface Resource {
   id: number;
   title: string;
   slug: string;
-  category: ResourceCategory;
+  categories: ResourceCategory[];
   summary: string;
   content: string;
   tags?: string[];

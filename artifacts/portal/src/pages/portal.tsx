@@ -124,9 +124,13 @@ export default function Portal() {
                 <Link key={resource.id} href={`/resources/${resource.id}`}>
                   <Card className="hover-elevate cursor-pointer transition-shadow flex-shrink-0 w-60">
                     <CardContent className="p-4">
-                      <div className="flex items-center gap-1 mb-2 text-xs text-muted-foreground">
-                        {categoryIcons[resource.category]}
-                        <span>{categoryLabels[resource.category] || resource.category}</span>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2 text-xs text-muted-foreground">
+                        {resource.categories.map(c => (
+                          <span key={c} className="flex items-center gap-1">
+                            {categoryIcons[c]}
+                            {categoryLabels[c] || c}
+                          </span>
+                        ))}
                       </div>
                       <p className="font-semibold text-sm leading-snug line-clamp-2 text-foreground">{resource.title}</p>
                       {resource.isPremium && (
@@ -181,11 +185,13 @@ export default function Portal() {
                             {resource.summary}
                           </p>
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1 bg-muted px-2 py-1 rounded">
-                            {categoryIcons[resource.category]}
-                            {categoryLabels[resource.category] || resource.category}
-                          </span>
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          {resource.categories.map(c => (
+                            <span key={c} className="flex items-center gap-1 bg-muted px-2 py-1 rounded">
+                              {categoryIcons[c]}
+                              {categoryLabels[c] || c}
+                            </span>
+                          ))}
                           <span>{format(new Date(resource.createdAt), "MMM d, yyyy")}</span>
                           {resource.readingMinutes && (
                             <span>{resource.readingMinutes} min read</span>

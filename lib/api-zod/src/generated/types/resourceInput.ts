@@ -9,7 +9,8 @@
 export interface ResourceInput {
   /** @minLength 1 */
   title: string;
-  category: string;
+  /** @minItems 1 */
+  categories: string[];
   summary: string;
   content: string;
   tags?: string[];

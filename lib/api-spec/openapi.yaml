@@ -446,12 +446,14 @@ components:
 
     Resource:
       type: object
-      required: [id, title, slug, category, summary, content, isPremium, createdAt, updatedAt, authorName]
+      required: [id, title, slug, categories, summary, content, isPremium, createdAt, updatedAt, authorName]
       properties:
         id: { type: integer }
         title: { type: string }
         slug: { type: string }
-        category: { $ref: "#/components/schemas/ResourceCategory" }
+        categories:
+          type: array
+          items: { $ref: "#/components/schemas/ResourceCategory" }
         summary: { type: string }
         content: { type: string }
         tags:
@@ -467,10 +469,13 @@ components:
 
     ResourceInput:
       type: object
-      required: [title, category, summary, content]
+      required: [title, categories, summary, content]
       properties:
         title: { type: string, minLength: 1 }
-        category: { type: string }
+        categories:
+          type: array
+          items: { type: string }
+          minItems: 1
         summary: { type: string }
         content: { type: string }
         tags:
@@ -486,7 +491,9 @@ components:
       type: object
       properties:
         title: { type: string }
-        category: { type: string }
+        categories:
+          type: array
+          items: { type: string }
         summary: { type: string }
         content: { type: string }
         tags:

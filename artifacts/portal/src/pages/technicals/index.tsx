@@ -38,7 +38,7 @@ export default function TechnicalsIndex() {
 
   const results = query
     ? allResources
-        .filter(r => isTechnicalCategory(r.category))
+        .filter(r => r.categories.some(isTechnicalCategory))
         .filter(r =>
           r.title.toLowerCase().includes(query.toLowerCase()) ||
           r.summary.toLowerCase().includes(query.toLowerCase())
@@ -132,10 +132,12 @@ export default function TechnicalsIndex() {
                       <Card className="hover-elevate transition-shadow cursor-pointer group">
                         <CardContent className="p-5 flex items-start justify-between gap-4">
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="secondary" className="text-xs">
-                                {topicTitleByTag[resource.category] || resource.category}
-                              </Badge>
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                              {resource.categories.filter(isTechnicalCategory).map(c => (
+                                <Badge key={c} variant="secondary" className="text-xs">
+                                  {topicTitleByTag[c] || c}
+                                </Badge>
+                              ))}
                               {resource.isPremium && (
                                 <Badge variant="outline" className="text-xs">Premium</Badge>
                               )}

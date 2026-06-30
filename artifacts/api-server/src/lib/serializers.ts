@@ -31,7 +31,7 @@ export function toResource(r: Resource, opts?: { canAccessPremium?: boolean; inc
     id: r.id,
     title: r.title,
     slug: r.slug,
-    category: r.category,
+    categories: r.categories ?? [],
     summary: r.summary,
     content: locked || !includeContent ? "" : r.content,
     tags: r.tags ?? [],

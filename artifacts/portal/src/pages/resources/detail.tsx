@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import { KNOWN_CATEGORIES, TECHNICAL_CATEGORIES, isTechnicalCategory } from "@/lib/categories";
 
 const categoryLabels: Record<string, string> = {
   cv: "CV Templates",
@@ -72,9 +73,11 @@ export default function ResourceDetail() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 mb-6">
-            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
-              {categoryLabels[resource.category] || resource.category}
-            </Badge>
+            {resource.categories.map(c => (
+              <Badge key={c} variant="secondary" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
+                {categoryLabels[c] || c}
+              </Badge>
+            ))}
             {resource.isPremium && (
               <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
                 Premium
@@ -193,6 +196,7 @@ export default function ResourceDetail() {
         open={editOpen}
         onOpenChange={setEditOpen}
         initial={resource}
+        categories={resource.categories.some(isTechnicalCategory) ? TECHNICAL_CATEGORIES : KNOWN_CATEGORIES}
         onSuccess={() => setEditOpen(false)}
       />
     </Layout>

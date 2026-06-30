@@ -14,13 +14,16 @@ router.get("/dashboard/summary", requireAuth, async (req, res): Promise<void> =>
     .select({ c: sql<number>`count(*)::int` })
     .from(alumniProfilesTable);
 
-  const categoryCounts = await db
-    .select({
-      category: resourcesTable.category,
-      count: sql<number>`count(*)::int`,
-    })
-    .from(resourcesTable)
-    .groupBy(resourcesTable.category);
+  const categoryRows = await db
+    .select({ categories: resourcesTable.categories })
+    .from(resourcesTable);
+  const countMap = new Map<string, number>();
+  for (const row of categoryRows) {
+    for (const c of row.categories ?? []) {
+      countMap.set(c, (countMap.get(c) ?? 0) + 1);
+    }
+  }
+  const categoryCounts = Array.from(countMap, ([category, count]) => ({ category, count }));
 
   const recent = await db
     .select()

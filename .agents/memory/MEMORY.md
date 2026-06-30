@@ -1,1 +1,2 @@
 - [Resource category contract](resource-categories.md) — category lives in openapi ResourceCategory enum (DB is plain text); frontend categories.ts + technicals pages must only use enum values or API 400s.
+- [drizzle-kit push needs TTY](drizzle-push-tty.md) — push prompts on ambiguous column rename; --force does not help; use direct executeSql ALTER on empty tables.

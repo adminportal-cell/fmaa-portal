@@ -4,7 +4,7 @@ export const resourcesTable = pgTable("resources", {
   id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),
   title: text("title").notNull(),
-  category: text("category").notNull(),
+  categories: text("categories").array().notNull().default([]),
   summary: text("summary").notNull(),
   content: text("content").notNull(),
   tags: text("tags").array().notNull().default([]),

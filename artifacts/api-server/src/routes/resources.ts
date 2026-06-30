@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, arrayContains, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { db, resourcesTable, resourceViewsTable } from "@workspace/db";
 import { requireAuth, requireAdmin } from "../middlewares/requireAuth";
 import { toResource, slugify } from "../lib/serializers";
@@ -27,7 +27,7 @@ router.get("/resources", requireAuth, async (req, res): Promise<void> => {
   }
   const { category, q } = parsed.data;
   const conditions = [];
-  if (category) conditions.push(eq(resourcesTable.category, category));
+  if (category) conditions.push(arrayContains(resourcesTable.categories, [category]));
   if (q) {
     conditions.push(
       or(
@@ -111,7 +111,7 @@ router.post("/resources", requireAuth, requireAdmin, async (req, res): Promise<v
     .values({
       slug,
       title: data.title,
-      category: data.category,
+      categories: data.categories,
       summary: data.summary,
       content: data.content,
       tags: data.tags ?? [],

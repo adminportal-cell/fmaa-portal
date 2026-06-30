@@ -64,7 +64,7 @@ export interface Resource {
   id: number;
   title: string;
   slug: string;
-  category: ResourceCategory;
+  categories: ResourceCategory[];
   summary: string;
   content: string;
   tags?: string[];
@@ -83,7 +83,8 @@ export interface Resource {
 export interface ResourceInput {
   /** @minLength 1 */
   title: string;
-  category: string;
+  /** @minItems 1 */
+  categories: string[];
   summary: string;
   content: string;
   tags?: string[];
@@ -96,7 +97,7 @@ export interface ResourceInput {
 
 export interface ResourceUpdate {
   title?: string;
-  category?: string;
+  categories?: string[];
   summary?: string;
   content?: string;
   tags?: string[];

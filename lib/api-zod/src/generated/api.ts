@@ -45,7 +45,7 @@ export const GetDashboardSummaryResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "slug": zod.string(),
-  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous']),
+  "categories": zod.array(zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous'])),
   "summary": zod.string(),
   "content": zod.string(),
   "tags": zod.array(zod.string()).optional(),
@@ -85,7 +85,7 @@ export const ListResourcesResponseItem = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "slug": zod.string(),
-  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous']),
+  "categories": zod.array(zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous'])),
   "summary": zod.string(),
   "content": zod.string(),
   "tags": zod.array(zod.string()).optional(),
@@ -106,9 +106,10 @@ export const ListResourcesResponse = zod.array(ListResourcesResponseItem)
 
 
 
+
 export const CreateResourceBody = zod.object({
   "title": zod.string().min(1),
-  "category": zod.string(),
+  "categories": zod.array(zod.string()).min(1),
   "summary": zod.string(),
   "content": zod.string(),
   "tags": zod.array(zod.string()).optional(),
@@ -131,7 +132,7 @@ export const GetResourceResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "slug": zod.string(),
-  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous']),
+  "categories": zod.array(zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous'])),
   "summary": zod.string(),
   "content": zod.string(),
   "tags": zod.array(zod.string()).optional(),
@@ -154,7 +155,7 @@ export const UpdateResourceParams = zod.object({
 
 export const UpdateResourceBody = zod.object({
   "title": zod.string().optional(),
-  "category": zod.string().optional(),
+  "categories": zod.array(zod.string()).optional(),
   "summary": zod.string().optional(),
   "content": zod.string().optional(),
   "tags": zod.array(zod.string()).optional(),
@@ -168,7 +169,7 @@ export const UpdateResourceResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "slug": zod.string(),
-  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous']),
+  "categories": zod.array(zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous'])),
   "summary": zod.string(),
   "content": zod.string(),
   "tags": zod.array(zod.string()).optional(),
@@ -317,7 +318,7 @@ export const GetMyProgressResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "slug": zod.string(),
-  "category": zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous']),
+  "categories": zod.array(zod.enum(['cv', 'cover_letter', 'alumni_insight', 'technical', 'recruiting', 'behavioural_guide', 'accounting', 'valuation', 'dcf', 'lbo', 'm&a', 'excel', 'miscellaneous'])),
   "summary": zod.string(),
   "content": zod.string(),
   "tags": zod.array(zod.string()).optional(),

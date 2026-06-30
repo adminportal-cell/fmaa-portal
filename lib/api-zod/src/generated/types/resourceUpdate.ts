@@ -8,7 +8,7 @@
 
 export interface ResourceUpdate {
   title?: string;
-  category?: string;
+  categories?: string[];
   summary?: string;
   content?: string;
   tags?: string[];
