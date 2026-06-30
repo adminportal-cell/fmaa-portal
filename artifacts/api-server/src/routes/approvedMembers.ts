@@ -69,6 +69,26 @@ router.post(
       .set({ tier: "premium" })
       .where(and(inArray(usersTable.email, emails), ne(usersTable.role, "admin")));
 
+    // Pre-create member rows so newly approved emails show up under "Accesses"
+    // immediately (before they sign in). A placeholder id is used and is
+    // reconciled to the real Clerk id on first sign-in (see requireAuth).
+    const existingUsers = await db
+      .select({ email: usersTable.email })
+      .from(usersTable)
+      .where(inArray(usersTable.email, emails));
+    const existingEmails = new Set(existingUsers.map((u) => u.email));
+    const pendingRows = emails
+      .filter((email) => !existingEmails.has(email))
+      .map((email) => ({
+        id: `pending:${email}`,
+        email,
+        role: "member",
+        tier: "premium",
+      }));
+    if (pendingRows.length > 0) {
+      await db.insert(usersTable).values(pendingRows).onConflictDoNothing();
+    }
+
     res.status(201).json({ added: emails.length, emails });
   },
 );
@@ -96,6 +116,8 @@ router.delete(
       .update(usersTable)
       .set({ tier: "standard" })
       .where(and(eq(usersTable.email, email), ne(usersTable.role, "admin")));
+    // Remove the placeholder member row if they never signed in.
+    await db.delete(usersTable).where(eq(usersTable.id, `pending:${email}`));
     res.sendStatus(204);
   },
 );

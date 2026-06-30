@@ -129,9 +129,18 @@ export default function TechnicalsIndex() {
                   const isLocked = resource.isPremium && !me?.isPremium;
                   return (
                     <Link key={resource.id} href={`/resources/${resource.id}`}>
-                      <Card className="hover-elevate transition-shadow cursor-pointer group">
-                        <CardContent className="p-5 flex items-start justify-between gap-4">
-                          <div className="min-w-0">
+                      <Card className="hover-elevate transition-shadow cursor-pointer group overflow-hidden">
+                        <CardContent className="p-5 flex items-start gap-4">
+                          {resource.coverImageUrl && (
+                            <div className="w-28 h-20 rounded-md bg-muted overflow-hidden flex-shrink-0">
+                              <img
+                                src={resource.coverImageUrl}
+                                alt={resource.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2 mb-1">
                               {resource.categories.filter(isTechnicalCategory).map(c => (
                                 <Badge key={c} variant="secondary" className="text-xs">

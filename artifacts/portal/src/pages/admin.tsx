@@ -60,8 +60,8 @@ export default function Admin() {
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="approved" className="w-full">
           <TabsList className="mb-8 bg-muted/50 p-1">
-            <TabsTrigger value="approved">Approved Emails</TabsTrigger>
-            <TabsTrigger value="members">Members</TabsTrigger>
+            <TabsTrigger value="approved">Members</TabsTrigger>
+            <TabsTrigger value="members">Accesses</TabsTrigger>
           </TabsList>
 
           <TabsContent value="approved" className="space-y-6">
@@ -150,7 +150,7 @@ function ApprovedMembersManager() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Approved Emails ({approved?.length ?? 0})</CardTitle>
+          <CardTitle>Members ({approved?.length ?? 0})</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
             These email addresses will receive Premium membership automatically on sign-in.
           </p>
@@ -231,7 +231,7 @@ function MembersManager() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Members ({members?.length ?? 0})</CardTitle>
+        <CardTitle>Accesses ({members?.length ?? 0})</CardTitle>
         <p className="text-sm text-muted-foreground mt-1">All signed-up portal members. Adjust roles and membership tiers here.</p>
       </CardHeader>
       <CardContent>

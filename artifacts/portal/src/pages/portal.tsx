@@ -29,7 +29,7 @@ const categoryLabels: Record<string, string> = {
 
 export default function Portal() {
   const { data: me, isLoading: meLoading } = useGetMe();
-  const { data: summary, isLoading: summaryLoading } = useGetDashboardSummary();
+  const { data: summary } = useGetDashboardSummary();
   const { data: progress } = useGetMyProgress();
 
   const getGreeting = () => {
@@ -39,7 +39,7 @@ export default function Portal() {
     return "Good evening";
   };
 
-  if (meLoading || summaryLoading || !me || !summary) {
+  if (meLoading || !me) {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-8 space-y-8">
@@ -85,20 +85,20 @@ export default function Portal() {
 
         {/* Stats Grid */}
         {(() => {
-          const totalTechnical = (summary.categoryCounts ?? [])
+          const totalTechnical = (summary?.categoryCounts ?? [])
             .filter(c => isTechnicalCategory(c.category))
             .reduce((sum, c) => sum + c.count, 0);
           return (
             <section className="grid grid-cols-3 gap-4">
               <Card className="shadow-sm">
                 <CardContent className="p-6">
-                  <div className="text-3xl font-bold text-primary mb-1">{summary.totalResources}</div>
+                  <div className="text-3xl font-bold text-primary mb-1">{summary?.totalResources ?? 0}</div>
                   <div className="text-sm font-medium text-muted-foreground">Total Resources</div>
                 </CardContent>
               </Card>
               <Card className="shadow-sm">
                 <CardContent className="p-6">
-                  <div className="text-3xl font-bold text-primary mb-1">{summary.totalAlumni}</div>
+                  <div className="text-3xl font-bold text-primary mb-1">{summary?.totalAlumni ?? 0}</div>
                   <div className="text-sm font-medium text-muted-foreground">Alumni Profiles</div>
                 </CardContent>
               </Card>
@@ -156,8 +156,8 @@ export default function Portal() {
             </div>
 
             <div className="space-y-4">
-              {summary.recentResources.length > 0 ? (
-                summary.recentResources.map(resource => (
+              {(summary?.recentResources ?? []).length > 0 ? (
+                (summary?.recentResources ?? []).map(resource => (
                   <Card key={resource.id} className="hover-elevate transition-shadow overflow-hidden group">
                     <div className="flex flex-col sm:flex-row">
                       {resource.coverImageUrl && (
@@ -219,8 +219,8 @@ export default function Portal() {
             </div>
 
             <div className="space-y-4">
-              {summary.featuredAlumni.length > 0 ? (
-                summary.featuredAlumni.map(alumnus => (
+              {(summary?.featuredAlumni ?? []).length > 0 ? (
+                (summary?.featuredAlumni ?? []).map(alumnus => (
                   <Link key={alumnus.id} href={`/alumni/${alumnus.id}`}>
                     <Card className="hover-elevate cursor-pointer transition-shadow">
                       <CardContent className="p-4 flex items-center gap-4">

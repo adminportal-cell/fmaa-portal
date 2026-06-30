@@ -97,6 +97,15 @@ function TechnicalTopicPage({ title, description, tag }: TopicPageProps) {
         ) : (
           articles.map(article => (
             <Card key={article.id} className="overflow-hidden">
+              {article.coverImageUrl && (
+                <div className="h-48 w-full bg-muted overflow-hidden">
+                  <img
+                    src={article.coverImageUrl}
+                    alt={article.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <CardContent className="p-8">
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div className="flex-1">

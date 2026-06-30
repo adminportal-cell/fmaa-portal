@@ -20,7 +20,7 @@ const CATEGORY_TILES = [
   { value: "cover_letter",     label: "Cover Letters",      Icon: FileText,     description: "Cover letter guides for IB, AM, and consulting." },
   { value: "alumni_insight",   label: "Alumni Insights",    Icon: GraduationCap, description: "First-hand notes from FMAA alumni." },
   { value: "recruiting",       label: "Recruiting",         Icon: Briefcase,    description: "Exclusive recruiting tips and strategies." },
-  { value: "behavioural_guide",label: "Behavioural",        Icon: BookOpen,     description: "Behavioural interview frameworks." },
+  { value: "behavioural_guide",label: "Behavioural Guides", Icon: BookOpen,     description: "Behavioural interview frameworks." },
   { value: "technical",        label: "Technical Guides",   Icon: BookOpen,     description: "General technical reference materials." },
 ];
 
@@ -39,7 +39,7 @@ const categoryLabels: Record<string, string> = {
   alumni_insight:   "Alumni Insights",
   technical:        "Technical Guides",
   recruiting:       "Recruiting",
-  behavioural_guide:"Behavioural",
+  behavioural_guide:"Behavioural Guides",
 };
 
 export default function ResourcesList() {

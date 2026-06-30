@@ -73,6 +73,41 @@ async function jitProvisionUser(userId: string): Promise<User> {
     return existing;
   }
 
+  // No row matched by Clerk id. A pre-created placeholder row may exist for this
+  // email (added via the approved-members admin flow). Adopt it by swapping in
+  // the real Clerk id so we don't create a duplicate member. Restrict strictly
+  // to the placeholder row (id = `pending:<email>`) — never match by email alone,
+  // since users.email is not unique and the resource_views FK has no
+  // ON UPDATE CASCADE, so mutating a real account's PK could fail or orphan rows.
+  const placeholderId = `pending:${email}`;
+  const [pending] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, placeholderId));
+  if (pending) {
+    const desiredRole = isPreAuthorizedAdmin ? "admin" : pending.role;
+    const desiredTier =
+      isPreAuthorizedAdmin || pending.role === "admin" || approved
+        ? "premium"
+        : pending.tier;
+    const [adopted] = await db
+      .update(usersTable)
+      .set({
+        id: userId,
+        email,
+        name,
+        avatarUrl: clerkUser.imageUrl ?? null,
+        role: desiredRole,
+        tier: desiredTier,
+      })
+      .where(eq(usersTable.id, placeholderId))
+      .returning();
+    if (adopted) return adopted;
+    // Lost a race: a concurrent sign-in already adopted the placeholder.
+    const [now] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
+    if (now) return now;
+  }
+
   const [created] = await db
     .insert(usersTable)
     .values({
