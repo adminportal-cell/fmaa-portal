@@ -1,3 +1,4 @@
 - [Resource category contract](resource-categories.md) — category lives in openapi ResourceCategory enum (DB is plain text); frontend categories.ts + technicals pages must only use enum values or API 400s.
 - [drizzle-kit push needs TTY](drizzle-push-tty.md) — push prompts on ambiguous column rename; --force does not help; use direct executeSql ALTER on empty tables.
 - [Portal auth cookies](portal-auth.md) — portal uses Clerk session cookies (same-origin), never setAuthTokenGetter; blanket 401s usually mean ClerkProvider failed to init (e.g. stale HMR crash), fix with refresh.
+- [Clerk dev iframe 401s](clerk-dev-iframe.md) — Clerk dev-instance session cookie is blocked in the Replit preview iframe; signed-in calls 401 there but work in a new tab / production. Don't chase DB role or server config.
