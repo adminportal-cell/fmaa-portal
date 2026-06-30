@@ -13,8 +13,6 @@ import { TECHNICAL_CATEGORIES, isTechnicalCategory } from "@/lib/categories";
 const topics = [
   { slug: "accounting",   title: "Accounting",    description: "Three statements, ratios, and core accounting concepts.", tag: "accounting" },
   { slug: "valuation",    title: "Valuation",     description: "Trading comps, transaction comps, and valuation frameworks.", tag: "valuation" },
-  { slug: "dcf",          title: "DCF",           description: "Discounted cash flow modelling from first principles.", tag: "dcf" },
-  { slug: "lbo",          title: "LBO",           description: "Leveraged buyout structures, returns, and modelling.", tag: "lbo" },
   { slug: "m-and-a",      title: "M&A",           description: "Merger mechanics, accretion/dilution, and deal considerations.", tag: "m&a" },
   { slug: "excel",        title: "Excel",         description: "Shortcuts, functions, and modelling best practices for Excel.", tag: "excel" },
   { slug: "miscellaneous",title: "Miscellaneous", description: "Additional technical topics and supplementary guides.", tag: "miscellaneous" },

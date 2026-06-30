@@ -96,7 +96,7 @@ export default function Home() {
                 {
                   icon: BookOpen,
                   title: "Technicals",
-                  body: "Technical guides covering Accounting, Valuation, DCF, LBO and M&A modelling.",
+                  body: "Technical guides covering Accounting, Valuation, M&A and Excel modelling.",
                 },
               ].map(({ icon: Icon, title, body }) => (
                 <div key={title} className="bg-background p-10 hover:bg-secondary/30 transition-colors">

@@ -34,13 +34,6 @@ function TechnicalTopicPage({ title, description, tag }: TopicPageProps) {
     query: { queryKey: ["resources", tag] as any }
   });
 
-  // The dialog's category is fixed to this topic. Ensure the topic's own
-  // category is selectable even if it's not in the shared picker (e.g. DCF/LBO,
-  // which were removed from the general "Add Technical Resource" dropdown).
-  const dialogCategories = TECHNICAL_CATEGORIES.some(c => c.value === tag)
-    ? TECHNICAL_CATEGORIES
-    : [...TECHNICAL_CATEGORIES, { value: tag, label: title }];
-
   const handleDelete = (id: number) => {
     if (!confirm("Delete this article? This cannot be undone.")) return;
     deleteResource.mutate({ id }, {
@@ -159,7 +152,7 @@ function TechnicalTopicPage({ title, description, tag }: TopicPageProps) {
         initial={editTarget}
         defaultCategory={tag}
         defaultTag={tag}
-        categories={dialogCategories}
+        categories={TECHNICAL_CATEGORIES}
         onSuccess={() => { setFormOpen(false); setEditTarget(undefined); }}
       />
     </Layout>
@@ -172,14 +165,6 @@ export function AccountingPage() {
 
 export function ValuationPage() {
   return <TechnicalTopicPage title="Valuation" description="Trading comps, transaction comps, and valuation frameworks." tag="valuation" />;
-}
-
-export function DcfPage() {
-  return <TechnicalTopicPage title="DCF" description="Discounted cash flow modelling from first principles." tag="dcf" />;
-}
-
-export function LboPage() {
-  return <TechnicalTopicPage title="LBO" description="Leveraged buyout structures, returns, and modelling." tag="lbo" />;
 }
 
 export function MAndAPage() {

@@ -18,12 +18,10 @@ export const TECHNICAL_CATEGORIES = [
 
 // Single source of truth for which resource categories belong to the Technicals
 // section. These never appear in the general Resource Library — only under their
-// matching Technicals topic tile. Includes legacy dcf/lbo (topic pages still exist).
+// matching Technicals topic tile.
 export const TECHNICAL_CATEGORY_VALUES = [
   "accounting",
   "valuation",
-  "dcf",
-  "lbo",
   "m&a",
   "excel",
   "miscellaneous",

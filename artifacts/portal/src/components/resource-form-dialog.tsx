@@ -483,7 +483,7 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
             <Input
               value={form.tags.join(", ")}
               onChange={e => set("tags", e.target.value.split(",").map(t => t.trim().toLowerCase()))}
-              placeholder="e.g. accounting, dcf, modelling"
+              placeholder="e.g. accounting, valuation, modelling"
             />
           </div>
 

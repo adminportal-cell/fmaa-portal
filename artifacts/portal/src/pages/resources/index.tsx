@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Search, BookOpen, Briefcase, FileText, Lock, ChevronRight, Plus, Pencil, Trash2, GraduationCap, LayoutGrid } from "lucide-react";
+import { Search, BookOpen, Briefcase, FileText, Lock, ChevronRight, Plus, Pencil, Trash2, GraduationCap, X } from "lucide-react";
 import { format } from "date-fns";
 import { useListResources, useGetMe, useDeleteResource, Resource } from "@workspace/api-client-react";
 import { queryClient } from "@/lib/queryClient";
@@ -31,7 +31,6 @@ const categoryIcons: Record<string, React.ReactNode> = {
   technical:        <BookOpen className="h-4 w-4" />,
   recruiting:       <Briefcase className="h-4 w-4" />,
   behavioural_guide:<Briefcase className="h-4 w-4" />,
-  miscellaneous:    <LayoutGrid className="h-4 w-4" />,
 };
 
 const categoryLabels: Record<string, string> = {
@@ -41,7 +40,6 @@ const categoryLabels: Record<string, string> = {
   technical:        "Technical Guides",
   recruiting:       "Recruiting",
   behavioural_guide:"Behavioural",
-  miscellaneous:    "Miscellaneous",
 };
 
 export default function ResourcesList() {
@@ -49,13 +47,16 @@ export default function ResourcesList() {
   const { data: me } = useGetMe();
   const isAdmin = me?.isAdmin ?? false;
 
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Resource | undefined>(undefined);
 
-  const { data: allResources, isLoading } = useListResources({}, {
-    query: { queryKey: ["resources", "all"] as any }
+  // Resources only appear once the member searches or opens a category tile.
+  const enabled = query.length > 0 || !!activeCategory;
+  const { data: allResources = [], isLoading } = useListResources({}, {
+    query: { queryKey: ["resources", "all"] as any, enabled },
   });
 
   const deleteResource = useDeleteResource();
@@ -80,10 +81,141 @@ export default function ResourcesList() {
     setFormOpen(true);
   };
 
-  const resources = (allResources ?? [])
-    .filter(r => !isTechnicalCategory(r.category))
-    .filter(r => !activeCategory || r.category === activeCategory)
-    .filter(r => !search || r.title.toLowerCase().includes(search.toLowerCase()) || r.summary.toLowerCase().includes(search.toLowerCase()));
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setActiveCategory(null);
+    setQuery(searchInput.trim());
+  };
+
+  const clearSearch = () => {
+    setSearchInput("");
+    setQuery("");
+  };
+
+  const selectCategory = (value: string) => {
+    setSearchInput("");
+    setQuery("");
+    setActiveCategory(prev => (prev === value ? null : value));
+  };
+
+  const base = allResources.filter(r => !isTechnicalCategory(r.category));
+
+  const displayed = query
+    ? base.filter(r =>
+        r.title.toLowerCase().includes(query.toLowerCase()) ||
+        r.summary.toLowerCase().includes(query.toLowerCase())
+      )
+    : activeCategory
+      ? base.filter(r => r.category === activeCategory)
+      : [];
+
+  const renderList = () => {
+    if (isLoading) {
+      return Array(4).fill(0).map((_, i) => (
+        <Card key={i} className="p-5 flex gap-6">
+          <Skeleton className="w-40 h-28 rounded-md" />
+          <div className="flex-1 space-y-3 py-1">
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        </Card>
+      ));
+    }
+    if (displayed.length === 0) {
+      return (
+        <div className="text-center py-20 border border-dashed rounded-xl bg-muted/10">
+          <BookOpen className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-1">No resources found</h3>
+          <p className="text-muted-foreground">
+            {query
+              ? "Try a different search, or browse a category below."
+              : `No ${categoryLabels[activeCategory!] || activeCategory} resources yet.`}
+          </p>
+        </div>
+      );
+    }
+    return (
+      <div className="grid gap-4">
+        {displayed.map(resource => {
+          const isLocked = resource.isPremium && !me?.isPremium;
+          return (
+            <Link key={resource.id} href={`/resources/${resource.id}`}>
+              <Card className={`hover-elevate transition-shadow overflow-hidden group cursor-pointer ${isLocked ? "opacity-90" : ""}`}>
+                <div className="flex flex-col sm:flex-row h-full">
+                  {resource.coverImageUrl ? (
+                    <div className="sm:w-48 h-40 sm:h-auto bg-muted flex-shrink-0 overflow-hidden relative">
+                      <img
+                        src={resource.coverImageUrl}
+                        alt={resource.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      {isLocked && (
+                        <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center">
+                          <div className="bg-background/90 p-2 rounded-full shadow-sm">
+                            <Lock className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : isLocked ? (
+                    <div className="hidden sm:flex w-16 bg-muted/30 items-start justify-center pt-6 border-r border-border">
+                      <Lock className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                  ) : null}
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-start justify-between gap-4 mb-2">
+                        <h3 className="font-bold text-xl leading-tight group-hover:text-primary transition-colors">
+                          {resource.title}
+                        </h3>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {resource.isPremium && (
+                            <Badge variant={isLocked ? "outline" : "secondary"} className={isLocked ? "" : "bg-accent/10 text-accent border-accent/20"}>
+                              Premium
+                            </Badge>
+                          )}
+                          {isAdmin && (
+                            <>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={e => openEdit(e, resource)}>
+                                <Pencil className="w-3.5 h-3.5" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={e => handleDelete(e, resource.id)}>
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-muted-foreground line-clamp-2 mb-4">{resource.summary}</p>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1.5 font-medium text-foreground bg-muted/50 px-2.5 py-1 rounded-md">
+                          {categoryIcons[resource.category]}
+                          {categoryLabels[resource.category] || resource.category}
+                        </span>
+                        <span>{resource.authorName}</span>
+                        <span className="hidden sm:inline">&bull;</span>
+                        <span>{format(new Date(resource.createdAt), "MMM d, yyyy")}</span>
+                        {resource.readingMinutes && (
+                          <>
+                            <span className="hidden sm:inline">&bull;</span>
+                            <span>{resource.readingMinutes} min read</span>
+                          </>
+                        )}
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity transform -translate-x-2 group-hover:translate-x-0" />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </Link>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <Layout>
@@ -112,160 +244,79 @@ export default function ResourcesList() {
 
       <div className="container mx-auto px-4 py-8 max-w-5xl">
 
-        {/* Category Tiles */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-8">
-          {CATEGORY_TILES.map(({ value, label, Icon, description }) => {
-            const isActive = activeCategory === value;
-            return (
-              <button
-                key={value}
-                onClick={() => setActiveCategory(isActive ? null : value)}
-                className={`text-left p-4 rounded-xl border transition-all ${
-                  isActive
-                    ? "border-primary bg-primary/5 shadow-sm"
-                    : "border-border bg-card hover:border-primary/40 hover:bg-muted/30"
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${isActive ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div className={`font-semibold text-sm ${isActive ? "text-primary" : "text-foreground"}`}>{label}</div>
-                <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{description}</div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Search */}
-        <div className="relative mb-6">
+        {/* Search — surfaces resources only on Enter */}
+        <form onSubmit={handleSearch} className="relative mb-8">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search resources..."
-            className="pl-9 h-11"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
+            placeholder="Search the resource library, then press Enter..."
+            className="pl-9 pr-10 h-11"
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
           />
-        </div>
+          {query && (
+            <button
+              type="button"
+              onClick={clearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label="Clear search"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </form>
 
-        {/* Active filter label */}
-        {activeCategory && (
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">{categoryLabels[activeCategory] || activeCategory}</h2>
-            <Button variant="ghost" size="sm" onClick={() => setActiveCategory(null)} className="text-muted-foreground">
-              Clear filter
-            </Button>
-          </div>
-        )}
-
-        {/* Resource List */}
-        <div className="space-y-4">
-          {isLoading ? (
-            Array(4).fill(0).map((_, i) => (
-              <Card key={i} className="p-5 flex gap-6">
-                <Skeleton className="w-40 h-28 rounded-md" />
-                <div className="flex-1 space-y-3 py-1">
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-2/3" />
-                </div>
-              </Card>
-            ))
-          ) : resources.length === 0 ? (
-            <div className="text-center py-20 border border-dashed rounded-xl bg-muted/10">
-              <BookOpen className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-1">No resources found</h3>
-              <p className="text-muted-foreground">
-                {activeCategory
-                  ? `No ${categoryLabels[activeCategory] || activeCategory} resources yet.`
-                  : "Try adjusting your search or selecting a category above."}
-              </p>
-              {(search || activeCategory) && (
-                <Button variant="outline" className="mt-4" onClick={() => { setSearch(""); setActiveCategory(null); }}>
-                  Clear filters
-                </Button>
-              )}
+        {query ? (
+          /* Search results */
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">
+                {displayed.length} result{displayed.length === 1 ? "" : "s"} for “{query}”
+              </h2>
+              <Button variant="ghost" size="sm" onClick={clearSearch} className="text-muted-foreground">
+                Back to library
+              </Button>
             </div>
-          ) : (
-            <div className="grid gap-4">
-              {resources.map(resource => {
-                const isLocked = resource.isPremium && !me?.isPremium;
+            {renderList()}
+          </div>
+        ) : (
+          <>
+            {/* Category Tiles */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {CATEGORY_TILES.map(({ value, label, Icon, description }) => {
+                const isActive = activeCategory === value;
                 return (
-                  <Link key={resource.id} href={`/resources/${resource.id}`}>
-                    <Card className={`hover-elevate transition-shadow overflow-hidden group cursor-pointer ${isLocked ? "opacity-90" : ""}`}>
-                      <div className="flex flex-col sm:flex-row h-full">
-                        {resource.coverImageUrl ? (
-                          <div className="sm:w-48 h-40 sm:h-auto bg-muted flex-shrink-0 overflow-hidden relative">
-                            <img
-                              src={resource.coverImageUrl}
-                              alt={resource.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                            {isLocked && (
-                              <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center">
-                                <div className="bg-background/90 p-2 rounded-full shadow-sm">
-                                  <Lock className="w-5 h-5 text-muted-foreground" />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ) : isLocked ? (
-                          <div className="hidden sm:flex w-16 bg-muted/30 items-start justify-center pt-6 border-r border-border">
-                            <Lock className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                        ) : null}
-                        <div className="p-5 flex-1 flex flex-col justify-between">
-                          <div>
-                            <div className="flex items-start justify-between gap-4 mb-2">
-                              <h3 className="font-bold text-xl leading-tight group-hover:text-primary transition-colors">
-                                {resource.title}
-                              </h3>
-                              <div className="flex items-center gap-1 flex-shrink-0">
-                                {resource.isPremium && (
-                                  <Badge variant={isLocked ? "outline" : "secondary"} className={isLocked ? "" : "bg-accent/10 text-accent border-accent/20"}>
-                                    Premium
-                                  </Badge>
-                                )}
-                                {isAdmin && (
-                                  <>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={e => openEdit(e, resource)}>
-                                      <Pencil className="w-3.5 h-3.5" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={e => handleDelete(e, resource.id)}>
-                                      <Trash2 className="w-3.5 h-3.5" />
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            <p className="text-muted-foreground line-clamp-2 mb-4">{resource.summary}</p>
-                          </div>
-                          <div className="flex flex-wrap items-center justify-between gap-4">
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                              <span className="flex items-center gap-1.5 font-medium text-foreground bg-muted/50 px-2.5 py-1 rounded-md">
-                                {categoryIcons[resource.category]}
-                                {categoryLabels[resource.category] || resource.category}
-                              </span>
-                              <span>{resource.authorName}</span>
-                              <span className="hidden sm:inline">&bull;</span>
-                              <span>{format(new Date(resource.createdAt), "MMM d, yyyy")}</span>
-                              {resource.readingMinutes && (
-                                <>
-                                  <span className="hidden sm:inline">&bull;</span>
-                                  <span>{resource.readingMinutes} min read</span>
-                                </>
-                              )}
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity transform -translate-x-2 group-hover:translate-x-0" />
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  </Link>
+                  <button
+                    key={value}
+                    onClick={() => selectCategory(value)}
+                    className={`text-left p-4 rounded-xl border transition-all ${
+                      isActive
+                        ? "border-primary bg-primary/5 shadow-sm"
+                        : "border-border bg-card hover:border-primary/40 hover:bg-muted/30"
+                    }`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${isActive ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div className={`font-semibold text-sm ${isActive ? "text-primary" : "text-foreground"}`}>{label}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{description}</div>
+                  </button>
                 );
               })}
             </div>
-          )}
-        </div>
+
+            {activeCategory && (
+              <div className="mt-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">{categoryLabels[activeCategory] || activeCategory}</h2>
+                  <Button variant="ghost" size="sm" onClick={() => setActiveCategory(null)} className="text-muted-foreground">
+                    Clear
+                  </Button>
+                </div>
+                {renderList()}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <ResourceFormDialog

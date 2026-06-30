@@ -20,8 +20,6 @@ import TechnicalsIndex from "@/pages/technicals";
 import {
   AccountingPage,
   ValuationPage,
-  DcfPage,
-  LboPage,
   MAndAPage,
   ExcelPage,
   MiscellaneousPage,
@@ -231,16 +229,6 @@ function ClerkProviderWithRoutes() {
 
           <Route path="/technicals/valuation">
             <SignedIn><ValuationPage /></SignedIn>
-            <SignedOut><Redirect to="/sign-in" /></SignedOut>
-          </Route>
-
-          <Route path="/technicals/dcf">
-            <SignedIn><DcfPage /></SignedIn>
-            <SignedOut><Redirect to="/sign-in" /></SignedOut>
-          </Route>
-
-          <Route path="/technicals/lbo">
-            <SignedIn><LboPage /></SignedIn>
             <SignedOut><Redirect to="/sign-in" /></SignedOut>
           </Route>
 
