@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { ShieldAlert } from "lucide-react";
+import { ShieldAlert, UserPlus } from "lucide-react";
 import { format } from "date-fns";
 import {
   useGetMe,
@@ -94,7 +94,7 @@ function ApprovedMembersManager() {
       { data: { emails: emailsInput } },
       {
         onSuccess: (res) => {
-          toast({ title: `Added ${res.added} approved email${res.added === 1 ? "" : "s"}` });
+          toast({ title: "Saved ✓", description: `Added ${res.added} approved email${res.added === 1 ? "" : "s"}.` });
           queryClient.invalidateQueries({ queryKey: ["/api/admin/approved-members"] });
           queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
           setEmailsInput("");
@@ -139,8 +139,9 @@ function ApprovedMembersManager() {
               />
             </div>
             <div className="flex justify-end">
-              <Button type="submit" disabled={addEmails.isPending}>
-                {addEmails.isPending ? "Adding..." : "Grant access"}
+              <Button type="submit" size="lg" disabled={addEmails.isPending} className="min-w-[170px] gap-2 text-base font-semibold shadow-sm">
+                <UserPlus className="w-4 h-4" />
+                {addEmails.isPending ? "Saving..." : "Save & grant access"}
               </Button>
             </div>
           </form>

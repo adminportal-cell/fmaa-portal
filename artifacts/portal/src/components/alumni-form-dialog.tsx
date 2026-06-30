@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Save } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -95,24 +95,24 @@ export function AlumniFormDialog({ open, onOpenChange, initial, onSuccess }: Pro
     if (isEdit) {
       updateAlumni.mutate({ id: initial!.id, data }, {
         onSuccess: () => {
-          toast({ title: "Alumni profile updated" });
+          toast({ title: "Saved ✓", description: "Your changes have been saved." });
           queryClient.invalidateQueries({ queryKey: ["alumni"] });
           queryClient.invalidateQueries({ queryKey: ["/api/alumni"] });
           onOpenChange(false);
           onSuccess?.();
         },
-        onError: (err: Error) => toast({ title: "Failed to update", description: err.message, variant: "destructive" }),
+        onError: (err: Error) => toast({ title: "Failed to save", description: err.message, variant: "destructive" }),
       });
     } else {
       createAlumni.mutate({ data }, {
         onSuccess: () => {
-          toast({ title: "Alumni profile created" });
+          toast({ title: "Saved ✓", description: "The alumni profile has been saved." });
           queryClient.invalidateQueries({ queryKey: ["alumni"] });
           queryClient.invalidateQueries({ queryKey: ["/api/alumni"] });
           onOpenChange(false);
           onSuccess?.();
         },
-        onError: (err: Error) => toast({ title: "Failed to create", description: err.message, variant: "destructive" }),
+        onError: (err: Error) => toast({ title: "Failed to save", description: err.message, variant: "destructive" }),
       });
     }
   };
@@ -217,9 +217,12 @@ export function AlumniFormDialog({ open, onOpenChange, initial, onSuccess }: Pro
             <Input value={form.linkedinUrl} onChange={e => set("linkedinUrl", e.target.value)} placeholder="https://linkedin.com/in/..." />
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? "Saving..." : isEdit ? "Save changes" : "Add to directory"}</Button>
+          <div className="flex justify-end gap-3 pt-2 border-t mt-2">
+            <Button type="button" variant="outline" size="lg" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="submit" size="lg" disabled={isPending} className="min-w-[170px] gap-2 text-base font-semibold shadow-sm">
+              <Save className="w-4 h-4" />
+              {isPending ? "Saving..." : isEdit ? "Save changes" : "Save profile"}
+            </Button>
           </div>
         </form>
       </DialogContent>

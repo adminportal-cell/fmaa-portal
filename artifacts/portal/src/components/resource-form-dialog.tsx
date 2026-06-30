@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Bold, Heading1, Heading2, Heading3, List, ListOrdered,
-  Table as TableIcon, ImageIcon, Upload, FileText, Link as LinkIcon,
+  Table as TableIcon, ImageIcon, Upload, FileText, Link as LinkIcon, Save,
 } from "lucide-react";
 
 import { KNOWN_CATEGORIES } from "@/lib/categories";
@@ -223,24 +223,24 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
     if (isEdit) {
       updateResource.mutate({ id: initial!.id, data }, {
         onSuccess: () => {
-          toast({ title: "Resource updated" });
+          toast({ title: "Saved ✓", description: "Your changes have been saved." });
           queryClient.invalidateQueries({ queryKey: ["resources"] });
           queryClient.invalidateQueries({ queryKey: ["/api/resources"] });
           onOpenChange(false);
           onSuccess?.();
         },
-        onError: (err: Error) => toast({ title: "Failed to update", description: err.message, variant: "destructive" }),
+        onError: (err: Error) => toast({ title: "Failed to save", description: err.message, variant: "destructive" }),
       });
     } else {
       createResource.mutate({ data }, {
         onSuccess: () => {
-          toast({ title: "Resource created" });
+          toast({ title: "Saved ✓", description: "Your new resource has been saved." });
           queryClient.invalidateQueries({ queryKey: ["resources"] });
           queryClient.invalidateQueries({ queryKey: ["/api/resources"] });
           onOpenChange(false);
           onSuccess?.();
         },
-        onError: (err: Error) => toast({ title: "Failed to create", description: err.message, variant: "destructive" }),
+        onError: (err: Error) => toast({ title: "Failed to save", description: err.message, variant: "destructive" }),
       });
     }
   };
@@ -492,9 +492,12 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
             <Label htmlFor="premium">Premium only <span className="text-muted-foreground text-xs font-normal">(locks content for non-premium members)</span></Label>
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? "Saving…" : isEdit ? "Save changes" : "Create resource"}</Button>
+          <div className="flex justify-end gap-3 pt-2 border-t mt-2">
+            <Button type="button" variant="outline" size="lg" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="submit" size="lg" disabled={isPending} className="min-w-[170px] gap-2 text-base font-semibold shadow-sm">
+              <Save className="w-4 h-4" />
+              {isPending ? "Saving…" : isEdit ? "Save changes" : "Save resource"}
+            </Button>
           </div>
         </form>
       </DialogContent>
