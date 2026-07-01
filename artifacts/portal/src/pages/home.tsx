@@ -10,9 +10,9 @@ export default function Home() {
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background text-foreground selection:bg-primary/15">
       <header className="sticky top-0 z-50 w-full bg-white border-b border-border">
-        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="container mx-auto px-6 h-28 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <img src={`${basePath}/logo.png`} alt="FMAA" className="h-14 w-auto" />
+            <img src={`${basePath}/logo.png`} alt="FMAA" className="h-24 w-auto" />
             <span className="hidden sm:inline text-xs font-semibold tracking-[0.2em] uppercase text-muted-foreground border-l border-border pl-3">
               Premium Portal
             </span>
