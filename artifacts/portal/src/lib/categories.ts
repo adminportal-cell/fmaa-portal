@@ -30,3 +30,28 @@ export const TECHNICAL_CATEGORY_VALUES = [
 export function isTechnicalCategory(category: string): boolean {
   return TECHNICAL_CATEGORY_VALUES.includes(category);
 }
+
+// Human-readable labels for every resource/technical category. Used to render
+// category badges consistently (capitalised, no underscores) across the portal.
+export const CATEGORY_LABELS: Record<string, string> = {
+  cv: "CV Templates",
+  cover_letter: "Cover Letters",
+  alumni_insight: "Alumni Insights",
+  technical: "Technical Guides",
+  recruiting: "Recruiting Tips",
+  behavioural_guide: "Behavioural Guides",
+  accounting: "Accounting",
+  valuation: "Valuation",
+  "m&a": "M&A",
+  excel: "Excel",
+  miscellaneous: "Miscellaneous",
+};
+
+export function categoryLabel(category: string): string {
+  return CATEGORY_LABELS[category] ?? category;
+}
+
+// Shared Tailwind classes for the "Premium" badge — amber/yellow to match the
+// admin tier badge.
+export const PREMIUM_BADGE_CLASS =
+  "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400";

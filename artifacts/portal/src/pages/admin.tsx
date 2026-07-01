@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { ShieldAlert, UserPlus } from "lucide-react";
+import { ShieldAlert, UserPlus, Pencil, Check, X } from "lucide-react";
 import { format } from "date-fns";
 import {
   useGetMe,
@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Admin() {
@@ -210,6 +211,36 @@ function MembersManager() {
   const { data: members, isLoading } = useListMembers();
   const updateMember = useUpdateMember();
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+
+  const startEdit = (id: string, name: string, email: string) => {
+    setEditingId(id);
+    setEditName(name);
+    setEditEmail(email);
+  };
+
+  const cancelEdit = () => setEditingId(null);
+
+  const saveEdit = (id: string) => {
+    if (!editEmail.trim()) {
+      toast({ title: "Email is required", variant: "destructive" });
+      return;
+    }
+    updateMember.mutate(
+      { id, data: { name: editName.trim(), email: editEmail.trim() } },
+      {
+        onSuccess: () => {
+          toast({ title: "Member updated" });
+          queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+          setEditingId(null);
+        },
+        onError: (err: Error) => toast({ title: "Failed to update", description: err.message, variant: "destructive" }),
+      },
+    );
+  };
+
   const handleRoleChange = (id: string, role: MemberRole) => {
     updateMember.mutate({ id, data: { role } }, {
       onSuccess: () => {
@@ -246,15 +277,39 @@ function MembersManager() {
                 <TableHead>Joined</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Tier</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {members?.map((member) => (
+              {members?.map((member) => {
+                const isEditing = editingId === member.id;
+                return (
                 <TableRow key={member.id}>
                   <TableCell className="font-medium">
-                    {member.name || <span className="text-muted-foreground italic">No name</span>}
+                    {isEditing ? (
+                      <Input
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        placeholder="Full name"
+                        className="h-8 w-40"
+                      />
+                    ) : (
+                      member.name || <span className="text-muted-foreground italic">No name</span>
+                    )}
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{member.email}</TableCell>
+                  <TableCell className="text-muted-foreground text-sm">
+                    {isEditing ? (
+                      <Input
+                        type="email"
+                        value={editEmail}
+                        onChange={(e) => setEditEmail(e.target.value)}
+                        placeholder="email@example.com"
+                        className="h-8 w-56"
+                      />
+                    ) : (
+                      member.email
+                    )}
+                  </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {format(new Date(member.createdAt), "MMM d, yyyy")}
                   </TableCell>
@@ -286,11 +341,39 @@ function MembersManager() {
                       </SelectContent>
                     </Select>
                   </TableCell>
+                  <TableCell className="text-right">
+                    {isEditing ? (
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30"
+                          onClick={() => saveEdit(member.id)}
+                          disabled={updateMember.isPending}
+                        >
+                          <Check className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={cancelEdit} disabled={updateMember.isPending}>
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground hover:text-foreground"
+                        onClick={() => startEdit(member.id, member.name, member.email)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
               {members?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     No members have signed up yet.
                   </TableCell>
                 </TableRow>

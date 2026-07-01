@@ -9,6 +9,8 @@ import type { MemberRole } from './memberRole';
 import type { MembershipTier } from './membershipTier';
 
 export interface MemberUpdate {
+  name?: string;
+  email?: string;
   role?: MemberRole;
   tier?: MembershipTier;
 }

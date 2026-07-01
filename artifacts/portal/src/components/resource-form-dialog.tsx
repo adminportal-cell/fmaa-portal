@@ -14,8 +14,34 @@ import {
   Bold, Heading1, Heading2, Heading3, List, ListOrdered,
   Table as TableIcon, ImageIcon, Upload, FileText, Link as LinkIcon, Save,
 } from "lucide-react";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 import { KNOWN_CATEGORIES } from "@/lib/categories";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+
+// Renders the first page of an uploaded PDF to a JPEG data URL so it can be used
+// as a default cover image when the admin doesn't supply one. Returns null for
+// non-PDF files or on failure.
+async function generatePdfCover(file: File): Promise<string | null> {
+  if (file.type !== "application/pdf") return null;
+  try {
+    const data = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data }).promise;
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 2 });
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvas, canvasContext: ctx, viewport }).promise;
+    return canvas.toDataURL("image/jpeg", 0.85);
+  } catch {
+    return null;
+  }
+}
 
 interface Props {
   open: boolean;
@@ -144,6 +170,7 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
       setUploadedFileName(file.name);
     };
     reader.readAsDataURL(file);
+    void maybeSetCoverFromPdf(file);
   }
   function handleContentFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -161,10 +188,23 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
       setUploadedDownloadName(file.name);
     };
     reader.readAsDataURL(file);
+    void maybeSetCoverFromPdf(file);
   }
   function handleDownloadableFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) processDownloadableFile(file);
+  }
+
+  // When a PDF is uploaded and no cover image has been set yet, use its first
+  // page as the cover automatically. Non-PDF documents can't be rendered in the
+  // browser, so they're skipped.
+  async function maybeSetCoverFromPdf(file: File) {
+    if (form.coverImageUrl) return;
+    const cover = await generatePdfCover(file);
+    if (!cover) return;
+    setForm(f => (f.coverImageUrl ? f : { ...f, coverImageUrl: cover }));
+    setCoverMode("upload");
+    toast({ title: "Cover image generated from the first page" });
   }
 
   function processCoverFile(file: File) {

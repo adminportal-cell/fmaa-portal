@@ -23,7 +23,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
   const navItems = [
-    { label: "Portal", path: "/portal" },
+    { label: "Home", path: "/portal" },
     { label: "Resources", path: "/resources" },
     { label: "Technicals", path: "/technicals" },
     { label: "Alumni", path: "/alumni" },
@@ -39,7 +39,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/portal" className="flex items-center transition-opacity hover:opacity-80">
-              <img src={`${basePath}/logo.png`} alt="FMAA" className="h-6 w-auto" />
+              <img src={`${basePath}/logo.png`} alt="FMAA" className="h-10 w-auto" />
             </Link>
 
             <nav className="hidden md:flex items-center gap-6">

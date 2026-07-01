@@ -12,15 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { KNOWN_CATEGORIES, TECHNICAL_CATEGORIES, isTechnicalCategory } from "@/lib/categories";
-
-const categoryLabels: Record<string, string> = {
-  cv: "CV Templates",
-  cover_letter: "Cover Letters",
-  alumni_insight: "Alumni Insights",
-  technical: "Technical Guides",
-  recruiting: "Recruiting Tips",
-};
+import { KNOWN_CATEGORIES, TECHNICAL_CATEGORIES, isTechnicalCategory, categoryLabel, PREMIUM_BADGE_CLASS } from "@/lib/categories";
 
 export default function ResourceDetail() {
   const params = useParams();
@@ -75,11 +67,11 @@ export default function ResourceDetail() {
           <div className="flex flex-wrap items-center gap-3 mb-6">
             {resource.categories.map(c => (
               <Badge key={c} variant="secondary" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
-                {categoryLabels[c] || c}
+                {categoryLabel(c)}
               </Badge>
             ))}
             {resource.isPremium && (
-              <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
+              <Badge variant="secondary" className={PREMIUM_BADGE_CLASS}>
                 Premium
               </Badge>
             )}

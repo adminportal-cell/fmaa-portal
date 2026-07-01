@@ -12,17 +12,14 @@ export default function Home() {
       <header className="sticky top-0 z-50 w-full bg-white border-b border-border">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <img src={`${basePath}/logo.png`} alt="FMAA" className="h-7 w-auto" />
+            <img src={`${basePath}/logo.png`} alt="FMAA" className="h-11 w-auto" />
             <span className="hidden sm:inline text-xs font-semibold tracking-[0.2em] uppercase text-muted-foreground border-l border-border pl-3">
               Premium Portal
             </span>
           </Link>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" asChild className="text-foreground hover:bg-secondary rounded-none h-11 px-5">
-              <Link href="/sign-in">Sign in</Link>
-            </Button>
             <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-none h-11 px-6 font-medium">
-              <Link href="/sign-up">Access portal</Link>
+              <Link href="/sign-in">Sign in</Link>
             </Button>
           </div>
         </div>
@@ -76,12 +73,12 @@ export default function Home() {
               </h2>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-px bg-border">
+            <div className="grid md:grid-cols-3 gap-px bg-border">
               {[
                 {
                   icon: FileText,
-                  title: "CV and cover letter resources",
-                  body: "Resumes and cover letters from FMAA alumni who received offers at bulge bracket banks, MBB and top buy-side firms, with notes on what they did well.",
+                  title: "CV and Cover Letter resources",
+                  body: "Resumes and Cover Letter templates from FMAA alumni who received offers at bulge bracket banks, MBB and top buy-side firms",
                 },
                 {
                   icon: Users,
@@ -89,13 +86,8 @@ export default function Home() {
                   body: "First-hand notes from alumni across Investment Banking, Asset Management, Consulting and Professional Services, covering application timelines, interview style and team culture.",
                 },
                 {
-                  icon: Lock,
-                  title: "Exclusive recruiting content",
-                  body: "TBD.",
-                },
-                {
                   icon: BookOpen,
-                  title: "Technicals",
+                  title: "Technical Resources",
                   body: "Technical guides covering Accounting, Valuation, M&A and Excel modelling.",
                 },
               ].map(({ icon: Icon, title, body }) => (
@@ -190,7 +182,7 @@ export default function Home() {
       <footer className="py-10 bg-background border-t border-border">
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-muted-foreground">
           <div className="flex items-center gap-3">
-            <img src={`${basePath}/logo.png`} alt="FMAA" className="h-5 w-auto opacity-70" />
+            <img src={`${basePath}/logo.png`} alt="FMAA" className="h-8 w-auto opacity-70" />
             <span>&copy; {new Date().getFullYear()} Financial Management Association of Australia.</span>
           </div>
           <div className="flex gap-8">

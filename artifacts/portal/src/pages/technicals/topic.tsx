@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 
 import { Layout } from "@/components/layout";
 import { ResourceFormDialog } from "@/components/resource-form-dialog";
-import { TECHNICAL_CATEGORIES } from "@/lib/categories";
+import { TECHNICAL_CATEGORIES, PREMIUM_BADGE_CLASS } from "@/lib/categories";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -116,7 +116,7 @@ function TechnicalTopicPage({ title, description, tag }: TopicPageProps) {
                         <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {article.readingMinutes} min read</span>
                       )}
                       {article.isPremium && (
-                        <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">Premium</Badge>
+                        <Badge variant="secondary" className={PREMIUM_BADGE_CLASS}>Premium</Badge>
                       )}
                     </div>
                   </div>

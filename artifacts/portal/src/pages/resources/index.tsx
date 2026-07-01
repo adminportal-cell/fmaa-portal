@@ -7,7 +7,7 @@ import { queryClient } from "@/lib/queryClient";
 
 import { Layout } from "@/components/layout";
 import { ResourceFormDialog } from "@/components/resource-form-dialog";
-import { KNOWN_CATEGORIES, isTechnicalCategory } from "@/lib/categories";
+import { KNOWN_CATEGORIES, isTechnicalCategory, PREMIUM_BADGE_CLASS } from "@/lib/categories";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
   alumni_insight:   <Briefcase className="h-4 w-4" />,
   technical:        <BookOpen className="h-4 w-4" />,
   recruiting:       <Briefcase className="h-4 w-4" />,
-  behavioural_guide:<Briefcase className="h-4 w-4" />,
+  behavioural_guide:<BookOpen className="h-4 w-4" />,
 };
 
 const categoryLabels: Record<string, string> = {
@@ -171,7 +171,7 @@ export default function ResourcesList() {
                         </h3>
                         <div className="flex items-center gap-1 flex-shrink-0">
                           {resource.isPremium && (
-                            <Badge variant={isLocked ? "outline" : "secondary"} className={isLocked ? "" : "bg-accent/10 text-accent border-accent/20"}>
+                            <Badge variant={isLocked ? "outline" : "secondary"} className={isLocked ? "" : PREMIUM_BADGE_CLASS}>
                               Premium
                             </Badge>
                           )}

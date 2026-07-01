@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ResourceFormDialog } from "@/components/resource-form-dialog";
-import { TECHNICAL_CATEGORIES, isTechnicalCategory } from "@/lib/categories";
+import { TECHNICAL_CATEGORIES, isTechnicalCategory, PREMIUM_BADGE_CLASS } from "@/lib/categories";
 
 const topics = [
   { slug: "accounting",   title: "Accounting",    description: "Three statements, ratios, and core accounting concepts.", tag: "accounting" },
@@ -148,7 +148,7 @@ export default function TechnicalsIndex() {
                                 </Badge>
                               ))}
                               {resource.isPremium && (
-                                <Badge variant="outline" className="text-xs">Premium</Badge>
+                                <Badge variant="secondary" className={`text-xs ${PREMIUM_BADGE_CLASS}`}>Premium</Badge>
                               )}
                             </div>
                             <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors truncate">

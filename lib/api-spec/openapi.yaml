@@ -319,7 +319,7 @@ paths:
     patch:
       operationId: updateMember
       tags: [admin]
-      summary: Update a member's role or tier (admin only)
+      summary: Update a member's name, email, role or tier (admin only)
       parameters:
         - name: id
           in: path
@@ -591,6 +591,8 @@ components:
     MemberUpdate:
       type: object
       properties:
+        name: { type: string }
+        email: { type: string }
         role: { $ref: "#/components/schemas/MemberRole" }
         tier: { $ref: "#/components/schemas/MembershipTier" }
 

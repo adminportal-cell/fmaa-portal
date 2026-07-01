@@ -1,9 +1,9 @@
 import { Link } from "wouter";
-import { ArrowRight, BookOpen, Briefcase, FileText, ChevronRight, Clock } from "lucide-react";
+import { ArrowRight, BookOpen, Briefcase, FileText, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
-import { useGetMe, useGetDashboardSummary, useGetMyProgress } from "@workspace/api-client-react";
+import { useGetMe, useGetDashboardSummary } from "@workspace/api-client-react";
 
-import { isTechnicalCategory } from "@/lib/categories";
+import { isTechnicalCategory, PREMIUM_BADGE_CLASS } from "@/lib/categories";
 import { Layout } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
   alumni_insight: <Briefcase className="h-4 w-4" />,
   technical: <BookOpen className="h-4 w-4" />,
   recruiting: <Briefcase className="h-4 w-4" />,
+  behavioural_guide: <BookOpen className="h-4 w-4" />,
 };
 
 const categoryLabels: Record<string, string> = {
@@ -25,12 +26,12 @@ const categoryLabels: Record<string, string> = {
   alumni_insight: "Alumni Insights",
   technical: "Technical Guides",
   recruiting: "Recruiting Tips",
+  behavioural_guide: "Behavioural Guides",
 };
 
 export default function Portal() {
   const { data: me, isLoading: meLoading } = useGetMe();
   const { data: summary } = useGetDashboardSummary();
-  const { data: progress } = useGetMyProgress();
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -64,8 +65,6 @@ export default function Portal() {
       </Layout>
     );
   }
-
-  const recentlyViewed = progress?.recentlyViewed ?? [];
 
   return (
     <Layout>
@@ -112,38 +111,6 @@ export default function Portal() {
           );
         })()}
 
-        {/* Recently Viewed */}
-        {recentlyViewed.length > 0 && (
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="w-5 h-5 text-muted-foreground" />
-              <h2 className="text-xl font-serif font-bold">Continue where you left off</h2>
-            </div>
-            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
-              {recentlyViewed.slice(0, 5).map(resource => (
-                <Link key={resource.id} href={`/resources/${resource.id}`}>
-                  <Card className="hover-elevate cursor-pointer transition-shadow flex-shrink-0 w-60">
-                    <CardContent className="p-4">
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2 text-xs text-muted-foreground">
-                        {resource.categories.map(c => (
-                          <span key={c} className="flex items-center gap-1">
-                            {categoryIcons[c]}
-                            {categoryLabels[c] || c}
-                          </span>
-                        ))}
-                      </div>
-                      <p className="font-semibold text-sm leading-snug line-clamp-2 text-foreground">{resource.title}</p>
-                      {resource.isPremium && (
-                        <Badge variant="secondary" className="mt-2 bg-accent/10 text-accent border-accent/20 text-xs">Premium</Badge>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
         <div className="grid lg:grid-cols-3 gap-8">
           
           {/* Main Content: Recent Resources */}
@@ -176,7 +143,7 @@ export default function Portal() {
                               <Link href={`/resources/${resource.id}`}>{resource.title}</Link>
                             </h3>
                             {resource.isPremium && (
-                              <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
+                              <Badge variant="secondary" className={PREMIUM_BADGE_CLASS}>
                                 Premium
                               </Badge>
                             )}

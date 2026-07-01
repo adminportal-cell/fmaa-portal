@@ -348,13 +348,15 @@ export const ListMembersResponse = zod.array(ListMembersResponseItem)
 
 
 /**
- * @summary Update a member's role or tier (admin only)
+ * @summary Update a member's name, email, role or tier (admin only)
  */
 export const UpdateMemberParams = zod.object({
   "id": zod.coerce.string()
 })
 
 export const UpdateMemberBody = zod.object({
+  "name": zod.string().optional(),
+  "email": zod.string().optional(),
   "role": zod.enum(['member', 'admin']).optional(),
   "tier": zod.enum(['standard', 'premium']).optional()
 })
