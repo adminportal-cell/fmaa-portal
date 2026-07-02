@@ -118,8 +118,14 @@ async function jitProvisionUser(userId: string): Promise<User> {
       role: isPreAuthorizedAdmin ? "admin" : "member",
       tier: approved ? "premium" : "standard",
     })
+    .onConflictDoNothing({ target: usersTable.id })
     .returning();
-  return created!;
+  if (created) return created;
+  // Lost a race: a concurrent request (e.g. /api/me and /api/dashboard/summary
+  // firing in parallel on first sign-in) already inserted this user.
+  const [row] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
+  if (row) return row;
+  throw new Error(`Failed to provision user ${userId}`);
 }
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
