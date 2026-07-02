@@ -29,3 +29,9 @@ id = "-yr-Onq_YIrOhqgpcMY-8"
 uri = "file://exports/fmaa-portal.zip"
 type = "unspecified"
 title = "FMAA Portal (source)"
+
+[[outputs]]
+id = "4VF1qLBAznNCoJVsUPSeb"
+uri = "file://exports/fmaa-portal-database-export.sql.gz"
+type = "unspecified"
+title = "FMAA Portal Database Export (compressed SQL)"
