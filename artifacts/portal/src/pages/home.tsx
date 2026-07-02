@@ -12,7 +12,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 w-full bg-white border-b border-border">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <img src={`${basePath}/logo.png`} alt="FMAA" className="h-13 w-auto" />
+            <img src={`${basePath}/logo.png`} alt="FMAA" className="h-15 w-auto" />
             <span className="hidden sm:inline text-xs font-semibold tracking-[0.2em] uppercase text-muted-foreground border-l border-border pl-3">
               Premium Portal
             </span>
