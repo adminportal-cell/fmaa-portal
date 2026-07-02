@@ -36,10 +36,10 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-white supports-[backdrop-filter]:bg-white/95 backdrop-blur">
-        <div className="container mx-auto px-4 h-24 flex items-center justify-between">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/portal" className="flex items-center transition-opacity hover:opacity-80">
-              <img src={`${basePath}/logo.png`} alt="FMAA" className="h-20 w-auto" />
+              <img src={`${basePath}/logo.png`} alt="FMAA" className="h-8 w-auto" />
             </Link>
 
             <nav className="hidden md:flex items-center gap-6">
