@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, arrayContains, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, arrayContains, desc, eq, getTableColumns, ilike, or, sql } from "drizzle-orm";
 import { db, resourcesTable, resourceViewsTable } from "@workspace/db";
 import { requireAuth, requireAdmin } from "../middlewares/requireAuth";
 import { toResource, slugify } from "../lib/serializers";
@@ -36,13 +36,23 @@ router.get("/resources", requireAuth, async (req, res): Promise<void> => {
       )!,
     );
   }
+  // Exclude the (potentially very large) fileUrl payload from list responses;
+  // clients fetch it via GET /resources/:id when they actually need the file.
+  const { fileUrl: _fileUrl, ...listColumns } = getTableColumns(resourcesTable);
   const rows = await db
-    .select()
+    .select({
+      ...listColumns,
+      hasFile: sql<boolean>`(${resourcesTable.fileUrl} is not null and ${resourcesTable.fileUrl} <> '')`,
+    })
     .from(resourcesTable)
     .where(conditions.length ? and(...conditions) : undefined)
     .orderBy(desc(resourcesTable.updatedAt));
   const premium = canAccessPremium(req.currentUser);
-  res.json(rows.map((r) => toResource(r, { canAccessPremium: premium, includeContent: false })));
+  res.json(
+    rows.map((r) =>
+      toResource(r, { canAccessPremium: premium, includeContent: false, includeFile: false }),
+    ),
+  );
 });
 
 router.get("/resources/:id", requireAuth, async (req, res): Promise<void> => {

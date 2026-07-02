@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  useCreateResource, useUpdateResource, Resource
+  useCreateResource, useUpdateResource, useGetResource, getGetResourceQueryKey, Resource
 } from "@workspace/api-client-react";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -72,6 +72,16 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
   const updateResource = useUpdateResource();
   const isEdit = !!initial;
 
+  // List responses omit the heavy fields (content, fileUrl), so when editing we
+  // fetch the full resource by id to populate the form correctly.
+  const { data: fullResource } = useGetResource(initial?.id ?? 0, {
+    query: {
+      queryKey: getGetResourceQueryKey(initial?.id ?? 0),
+      enabled: open && !!initial,
+    },
+  });
+  const fullLoaded = !isEdit || (fullResource?.id === initial?.id);
+
   const [form, setForm] = useState(blank(defaultCategory, defaultTag));
   const [contentMode, setContentMode] = useState<"write" | "upload">("write");
   const [coverMode, setCoverMode] = useState<"url" | "upload">("url");
@@ -96,7 +106,7 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
           readingMinutes: initial.readingMinutes ?? "",
           tags: initial.tags ?? [],
         });
-        const hasUploadedFile = (initial.fileUrl ?? "").startsWith("data:");
+        const hasUploadedFile = (initial.fileUrl ?? "").startsWith("data:") || initial.hasFile === true;
         setContentMode(hasUploadedFile ? "upload" : "write");
         const hasUploadedCover = (initial.coverImageUrl ?? "").startsWith("data:");
         setCoverMode(hasUploadedCover ? "upload" : "url");
@@ -112,6 +122,18 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
       }
     }
   }, [initial, open, defaultCategory, defaultTag]);
+
+  // Once the full resource arrives, fill in the heavy fields the list omits and
+  // correct the mode toggles (e.g. a URL-based file vs an uploaded one).
+  useEffect(() => {
+    if (!open || !initial || !fullResource || fullResource.id !== initial.id) return;
+    const fileUrl = fullResource.fileUrl ?? "";
+    setForm(f => ({ ...f, content: fullResource.content, fileUrl }));
+    const hasUploadedFile = fileUrl.startsWith("data:");
+    setContentMode(hasUploadedFile ? "upload" : "write");
+    setFileUrlMode(hasUploadedFile ? "upload" : "url");
+    setUploadedDownloadName(hasUploadedFile ? "File attached" : "");
+  }, [open, initial, fullResource]);
 
   const set = (k: string, v: unknown) => setForm(f => ({ ...f, [k]: v }));
 
@@ -527,9 +549,9 @@ export function ResourceFormDialog({ open, onOpenChange, initial, defaultCategor
 
           <div className="flex justify-end gap-3 pt-2 border-t mt-2">
             <Button type="button" variant="outline" size="lg" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" size="lg" disabled={isPending} className="min-w-[170px] gap-2 text-base font-semibold shadow-sm">
+            <Button type="submit" size="lg" disabled={isPending || !fullLoaded} className="min-w-[170px] gap-2 text-base font-semibold shadow-sm">
               <Save className="w-4 h-4" />
-              {isPending ? "Saving…" : isEdit ? "Save changes" : "Save resource"}
+              {isPending ? "Saving…" : !fullLoaded ? "Loading…" : isEdit ? "Save changes" : "Save resource"}
             </Button>
           </div>
         </form>

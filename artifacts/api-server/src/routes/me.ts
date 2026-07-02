@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { desc, eq, inArray } from "drizzle-orm";
+import { desc, eq, getTableColumns, inArray, sql } from "drizzle-orm";
 import { db, resourceViewsTable, resourcesTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
 import { toMe, toResource } from "../lib/serializers";
@@ -20,10 +20,15 @@ router.get("/me/progress", requireAuth, async (req, res): Promise<void> => {
 
   const viewedResourceIds = views.map((v) => v.resourceId);
 
-  let recentlyViewed: typeof resourcesTable.$inferSelect[] = [];
+  const { fileUrl: _fileUrl, ...resourceListColumns } = getTableColumns(resourcesTable);
+  type ResourceListRow = Omit<typeof resourcesTable.$inferSelect, "fileUrl"> & { hasFile: boolean };
+  let recentlyViewed: ResourceListRow[] = [];
   if (viewedResourceIds.length > 0) {
     const rows = await db
-      .select()
+      .select({
+        ...resourceListColumns,
+        hasFile: sql<boolean>`(${resourcesTable.fileUrl} is not null and ${resourcesTable.fileUrl} <> '')`,
+      })
       .from(resourcesTable)
       .where(inArray(resourcesTable.id, viewedResourceIds.slice(0, 10)));
     const byId = Object.fromEntries(rows.map((r) => [r.id, r]));
@@ -37,7 +42,7 @@ router.get("/me/progress", requireAuth, async (req, res): Promise<void> => {
   res.json({
     viewedResourceIds,
     recentlyViewed: recentlyViewed.map((r) =>
-      toResource(r, { canAccessPremium: isPremium, includeContent: false }),
+      toResource(r, { canAccessPremium: isPremium, includeContent: false, includeFile: false }),
     ),
   });
 });

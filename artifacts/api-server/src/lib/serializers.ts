@@ -24,9 +24,19 @@ export function toMember(user: User) {
   };
 }
 
-export function toResource(r: Resource, opts?: { canAccessPremium?: boolean; includeContent?: boolean }) {
+type ResourceRow = Omit<Resource, "fileUrl"> & {
+  fileUrl?: string | null;
+  hasFile?: boolean;
+};
+
+export function toResource(
+  r: ResourceRow,
+  opts?: { canAccessPremium?: boolean; includeContent?: boolean; includeFile?: boolean },
+) {
   const locked = r.isPremium && opts?.canAccessPremium === false;
   const includeContent = opts?.includeContent ?? true;
+  const includeFile = opts?.includeFile ?? true;
+  const hasFile = r.hasFile ?? Boolean(r.fileUrl);
   return {
     id: r.id,
     title: r.title,
@@ -35,7 +45,8 @@ export function toResource(r: Resource, opts?: { canAccessPremium?: boolean; inc
     summary: r.summary,
     content: locked || !includeContent ? "" : r.content,
     tags: r.tags ?? [],
-    fileUrl: locked ? null : r.fileUrl ?? null,
+    fileUrl: locked || !includeFile ? null : r.fileUrl ?? null,
+    hasFile: locked ? false : hasFile,
     coverImageUrl: r.coverImageUrl ?? null,
     readingMinutes: r.readingMinutes ?? null,
     isPremium: r.isPremium,

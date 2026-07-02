@@ -70,6 +70,7 @@ export interface Resource {
   tags?: string[];
   /** @nullable */
   fileUrl?: string | null;
+  hasFile?: boolean;
   /** @nullable */
   coverImageUrl?: string | null;
   /** @nullable */

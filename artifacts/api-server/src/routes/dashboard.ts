@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { desc, sql } from "drizzle-orm";
+import { desc, getTableColumns, sql } from "drizzle-orm";
 import { db, resourcesTable, alumniProfilesTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
 import { toResource, toAlumni } from "../lib/serializers";
@@ -25,8 +25,12 @@ router.get("/dashboard/summary", requireAuth, async (req, res): Promise<void> =>
   }
   const categoryCounts = Array.from(countMap, ([category, count]) => ({ category, count }));
 
+  const { fileUrl: _fileUrl, ...resourceListColumns } = getTableColumns(resourcesTable);
   const recent = await db
-    .select()
+    .select({
+      ...resourceListColumns,
+      hasFile: sql<boolean>`(${resourcesTable.fileUrl} is not null and ${resourcesTable.fileUrl} <> '')`,
+    })
     .from(resourcesTable)
     .orderBy(desc(resourcesTable.updatedAt))
     .limit(6);
@@ -46,6 +50,7 @@ router.get("/dashboard/summary", requireAuth, async (req, res): Promise<void> =>
         canAccessPremium:
           req.currentUser?.tier === "premium" || req.currentUser?.role === "admin",
         includeContent: false,
+        includeFile: false,
       }),
     ),
     featuredAlumni: featured.map(toAlumni),

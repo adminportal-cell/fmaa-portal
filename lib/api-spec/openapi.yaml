@@ -460,6 +460,7 @@ components:
           type: array
           items: { type: string }
         fileUrl: { type: ["string", "null"] }
+        hasFile: { type: boolean }
         coverImageUrl: { type: ["string", "null"] }
         readingMinutes: { type: ["integer", "null"] }
         isPremium: { type: boolean }
