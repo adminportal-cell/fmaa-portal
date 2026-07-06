@@ -26,7 +26,6 @@ import {
 } from "@/pages/technicals/topic";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
-import SignUpGate from "@/pages/sign-up-gate";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -100,13 +99,16 @@ function SignInPage() {
         routing="path"
         path={`${basePath}/sign-in`}
         signUpUrl={`${basePath}/sign-up`}
+        appearance={{ elements: { footerAction: "hidden" } }}
       />
     </div>
   );
 }
 
 function SignUpPage() {
-  return <SignUpGate />;
+  // Members are pre-registered when an admin approves their email, so there
+  // is no public sign-up — send anyone who lands here to sign-in.
+  return <Redirect to="/sign-in" />;
 }
 
 function HomeRedirect() {

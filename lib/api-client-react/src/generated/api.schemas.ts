@@ -204,6 +204,8 @@ export interface AddApprovedMembersInput {
 }
 
 export interface AddApprovedMembersResult {
+  /** Emails whose login account could not be created; retry by re-adding them. */
+  provisionFailed: string[];
   added: number;
   emails: string[];
 }

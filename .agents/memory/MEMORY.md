@@ -4,3 +4,4 @@
 - [Clerk dev iframe 401s](clerk-dev-iframe.md) — Clerk dev-instance session cookie is blocked in the Replit preview iframe; signed-in calls 401 there but work in a new tab / production. Don't chase DB role or server config.
 - [Member reconciliation](member-reconciliation.md) — approved emails pre-create `pending:<email>` user rows; sign-in adopts them by PK only, never by email (email not unique, FK no ON UPDATE CASCADE).
 - [Resource list payload size](resource-payload-size.md) — base64 files live in file_url; list endpoints must exclude it at SQL level or list pages fail to render.
+- [Clerk pre-provisioned member accounts](clerk-preprovision.md) — approved emails get passwordless Clerk accounts created server-side; no public sign-up in the portal.

@@ -95,7 +95,15 @@ function ApprovedMembersManager() {
       { data: { emails: emailsInput } },
       {
         onSuccess: (res) => {
-          toast({ title: "Saved ✓", description: `Added ${res.added} approved email${res.added === 1 ? "" : "s"}.` });
+          if (res.provisionFailed.length > 0) {
+            toast({
+              title: "Some accounts couldn't be set up",
+              description: `Added to the list, but login setup failed for: ${res.provisionFailed.join(", ")}. Remove and re-add them to retry.`,
+              variant: "destructive",
+            });
+          } else {
+            toast({ title: "Saved ✓", description: `Added ${res.added} approved email${res.added === 1 ? "" : "s"}.` });
+          }
           queryClient.invalidateQueries({ queryKey: ["/api/admin/approved-members"] });
           queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
           setEmailsInput("");

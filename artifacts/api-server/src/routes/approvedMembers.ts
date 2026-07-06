@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { clerkClient } from "@clerk/express";
 import { and, desc, eq, inArray, ne } from "drizzle-orm";
 import { db, approvedMembersTable, usersTable } from "@workspace/db";
 import { requireAuth, requireAdmin } from "../middlewares/requireAuth";
@@ -6,8 +7,38 @@ import {
   AddApprovedMembersBody,
   DeleteApprovedMemberParams,
 } from "@workspace/api-zod";
+import type { Logger } from "pino";
 
 const router: IRouter = Router();
+
+// Pre-create a Clerk account for each approved email so members can sign in
+// directly with their email (via emailed code) without ever needing a
+// sign-up step. Safe to call repeatedly: existing accounts are skipped.
+// Returns the emails for which account creation failed.
+async function ensureClerkAccounts(
+  emails: string[],
+  log: Logger,
+): Promise<string[]> {
+  const failed: string[] = [];
+  for (const email of emails) {
+    try {
+      const existing = await clerkClient.users.getUserList({
+        emailAddress: [email],
+        limit: 1,
+      });
+      if (existing.data.length > 0) continue;
+      await clerkClient.users.createUser({
+        emailAddress: [email],
+        skipPasswordRequirement: true,
+      });
+      log.info({ email }, "pre-created Clerk account for approved member");
+    } catch (err) {
+      failed.push(email);
+      log.warn({ err, email }, "failed to pre-create Clerk account");
+    }
+  }
+  return failed;
+}
 
 function parseEmails(input: string | string[]): string[] {
   const text = Array.isArray(input) ? input.join("\n") : input;
@@ -25,7 +56,7 @@ router.get(
   "/admin/approved-members",
   requireAuth,
   requireAdmin,
-  async (_req, res): Promise<void> => {
+  async (req, res): Promise<void> => {
     const rows = await db
       .select()
       .from(approvedMembersTable)
@@ -38,6 +69,25 @@ router.get(
         createdAt: r.createdAt.toISOString(),
       })),
     );
+    // Backfill: make sure every approved email that has never signed in
+    // (still has a pending placeholder) has a Clerk account. Runs in the
+    // background so the list loads instantly.
+    if (rows.length === 0) return;
+    const pending = await db
+      .select({ email: usersTable.email })
+      .from(usersTable)
+      .where(
+        inArray(
+          usersTable.id,
+          rows.map((r) => `pending:${r.email}`),
+        ),
+      );
+    if (pending.length > 0) {
+      void ensureClerkAccounts(
+        pending.map((p) => p.email),
+        req.log,
+      );
+    }
   },
 );
 
@@ -89,7 +139,9 @@ router.post(
       await db.insert(usersTable).values(pendingRows).onConflictDoNothing();
     }
 
-    res.status(201).json({ added: emails.length, emails });
+    const provisionFailed = await ensureClerkAccounts(emails, req.log);
+
+    res.status(201).json({ added: emails.length, emails, provisionFailed });
   },
 );
 
