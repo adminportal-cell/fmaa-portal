@@ -164,11 +164,29 @@ function ClerkProviderWithRoutes() {
             title: "Sign in to FMAA",
             subtitle: "Access the portal",
           },
+          emailCode: {
+            subtitle: "to continue to FMAA Portal",
+          },
+          emailLink: {
+            subtitle: "to continue to FMAA Portal",
+          },
+          password: {
+            subtitle: "to continue to FMAA Portal",
+          },
         },
         signUp: {
           start: {
             title: "Join FMAA",
             subtitle: "Start your career journey today",
+          },
+          emailCode: {
+            subtitle: "Enter the verification code sent to your email",
+          },
+          emailLink: {
+            subtitle: "to continue to FMAA Portal",
+          },
+          continue: {
+            subtitle: "to continue to FMAA Portal",
           },
         },
       }}
