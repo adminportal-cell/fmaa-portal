@@ -21,6 +21,16 @@ const TEMPLATE_SLUGS = [
 ];
 
 const APP_NAME_VAR = /\{\{\s*app\.name\s*\}\}/g;
+// The {{> app_logo}} partial renders the tenant's application name as text
+// when no logo is uploaded, so it leaks the stale name too. Replace it with
+// the app name directly.
+const APP_LOGO_PARTIAL = /\{\{>\s*app_logo\s*\}\}/g;
+const NEEDS_FIX = /\{\{\s*app\.name\s*\}\}|\{\{>\s*app_logo\s*\}\}/;
+
+function rebrand(text: string | null): string | null {
+  if (!text) return text;
+  return text.replace(APP_NAME_VAR, APP_NAME).replace(APP_LOGO_PARTIAL, APP_NAME);
+}
 
 interface ClerkEmailTemplate {
   slug: string;
@@ -62,7 +72,7 @@ export async function fixClerkEmailBranding(): Promise<void> {
       }
       const tpl = (await res.json()) as ClerkEmailTemplate;
       const fields = [tpl.subject, tpl.markup, tpl.body];
-      if (!fields.some((f) => f && /\{\{\s*app\.name\s*\}\}/.test(f))) continue;
+      if (!fields.some((f) => f && NEEDS_FIX.test(f))) continue;
 
       const upsert = await fetch(
         `https://api.clerk.com/v1/templates/email/${slug}`,
@@ -71,13 +81,9 @@ export async function fixClerkEmailBranding(): Promise<void> {
           headers,
           body: JSON.stringify({
             name: tpl.name,
-            subject: tpl.subject
-              ? tpl.subject.replace(APP_NAME_VAR, APP_NAME)
-              : tpl.subject,
-            markup: tpl.markup
-              ? tpl.markup.replace(APP_NAME_VAR, APP_NAME)
-              : tpl.markup,
-            body: tpl.body ? tpl.body.replace(APP_NAME_VAR, APP_NAME) : tpl.body,
+            subject: rebrand(tpl.subject),
+            markup: rebrand(tpl.markup),
+            body: rebrand(tpl.body),
             delivered_by_clerk: tpl.delivered_by_clerk,
           }),
         },
