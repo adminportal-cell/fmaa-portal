@@ -27,6 +27,28 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/HealthStatus" }
 
+  /auth/check-email:
+    post:
+      operationId: checkEmailApproved
+      tags: [auth]
+      summary: Check whether an email is on the approved member list (public)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CheckEmailInput" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CheckEmailResult" }
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
   /me:
     get:
       operationId: getMe
@@ -616,6 +638,18 @@ components:
             - type: array
               items: { type: string }
         note: { type: string }
+
+    CheckEmailInput:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, format: email }
+
+    CheckEmailResult:
+      type: object
+      required: [approved]
+      properties:
+        approved: { type: boolean }
 
     AddApprovedMembersResult:
       type: object

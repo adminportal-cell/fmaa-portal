@@ -8,7 +8,7 @@ const PRE_AUTHORIZED_ADMINS = new Set([
   "bridget.davis@fmaa.com.au",
 ]);
 
-async function isEmailApproved(email: string): Promise<boolean> {
+export async function isEmailApproved(email: string): Promise<boolean> {
   if (!email) return false;
   if (PRE_AUTHORIZED_ADMINS.has(email.toLowerCase())) return true;
   const [row] = await db

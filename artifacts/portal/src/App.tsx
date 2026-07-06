@@ -26,6 +26,7 @@ import {
 } from "@/pages/technicals/topic";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
+import SignUpGate from "@/pages/sign-up-gate";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -99,18 +100,13 @@ function SignInPage() {
         routing="path"
         path={`${basePath}/sign-in`}
         signUpUrl={`${basePath}/sign-up`}
-        appearance={{ elements: { footerAction: "hidden" } }}
       />
     </div>
   );
 }
 
 function SignUpPage() {
-  return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-muted/30 px-4 py-12">
-      <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
-    </div>
-  );
+  return <SignUpGate />;
 }
 
 function HomeRedirect() {
