@@ -362,8 +362,7 @@ export const UpdateMemberParams = zod.object({
 export const UpdateMemberBody = zod.object({
   "name": zod.string().optional(),
   "email": zod.string().optional(),
-  "role": zod.enum(['member', 'admin']).optional(),
-  "tier": zod.enum(['standard', 'premium']).optional()
+  "role": zod.enum(['member', 'admin']).optional()
 })
 
 export const UpdateMemberResponse = zod.object({

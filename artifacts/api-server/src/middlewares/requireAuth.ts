@@ -27,6 +27,14 @@ declare global {
   }
 }
 
+/** Thrown when a signed-in user's email is not on the approved-members list. */
+class NotApprovedError extends Error {
+  constructor(email: string) {
+    super(`Email not on approved list: ${email}`);
+    this.name = "NotApprovedError";
+  }
+}
+
 async function jitProvisionUser(userId: string): Promise<User> {
   const clerkUser = await clerkClient.users.getUser(userId);
   const email = (
@@ -44,12 +52,13 @@ async function jitProvisionUser(userId: string): Promise<User> {
 
   const [existing] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
   if (existing) {
+    // Everyone with access is premium, so approval is the gate: unapproved
+    // non-admin accounts are rejected outright instead of being downgraded.
+    if (!approved && !isPreAuthorizedAdmin && existing.role !== "admin") {
+      throw new NotApprovedError(email);
+    }
     const desiredRole = isPreAuthorizedAdmin ? "admin" : existing.role;
-    const desiredTier = isPreAuthorizedAdmin || existing.role === "admin"
-      ? "premium"
-      : approved
-        ? "premium"
-        : "standard";
+    const desiredTier = "premium";
     if (
       existing.email !== email ||
       existing.name !== name ||
@@ -85,11 +94,11 @@ async function jitProvisionUser(userId: string): Promise<User> {
     .from(usersTable)
     .where(eq(usersTable.id, placeholderId));
   if (pending) {
+    if (!approved && !isPreAuthorizedAdmin && pending.role !== "admin") {
+      throw new NotApprovedError(email);
+    }
     const desiredRole = isPreAuthorizedAdmin ? "admin" : pending.role;
-    const desiredTier =
-      isPreAuthorizedAdmin || pending.role === "admin" || approved
-        ? "premium"
-        : pending.tier;
+    const desiredTier = "premium";
     const [adopted] = await db
       .update(usersTable)
       .set({
@@ -108,6 +117,10 @@ async function jitProvisionUser(userId: string): Promise<User> {
     if (now) return now;
   }
 
+  if (!approved && !isPreAuthorizedAdmin) {
+    throw new NotApprovedError(email);
+  }
+
   const [created] = await db
     .insert(usersTable)
     .values({
@@ -116,7 +129,7 @@ async function jitProvisionUser(userId: string): Promise<User> {
       name,
       avatarUrl: clerkUser.imageUrl ?? null,
       role: isPreAuthorizedAdmin ? "admin" : "member",
-      tier: approved ? "premium" : "standard",
+      tier: "premium",
     })
     .onConflictDoNothing({ target: usersTable.id })
     .returning();
@@ -141,6 +154,14 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     req.currentUser = user;
     next();
   } catch (err) {
+    if (err instanceof NotApprovedError) {
+      req.log.warn({ err }, "Rejected sign-in from unapproved email");
+      res.status(403).json({
+        error: "Your email is not on the approved members list.",
+        code: "not_approved",
+      });
+      return;
+    }
     req.log.error({ err }, "Failed to provision user");
     res.status(500).json({ error: "Failed to load user" });
   }

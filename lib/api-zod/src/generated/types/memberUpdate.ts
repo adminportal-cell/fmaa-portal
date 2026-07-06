@@ -6,11 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { MemberRole } from './memberRole';
-import type { MembershipTier } from './membershipTier';
 
 export interface MemberUpdate {
   name?: string;
   email?: string;
   role?: MemberRole;
-  tier?: MembershipTier;
 }

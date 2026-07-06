@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useClerk, useUser } from "@clerk/clerk-react";
-import { useGetMe } from "@workspace/api-client-react";
-import { LogOut, User, Crown, Shield } from "lucide-react";
+import { useGetMe, ApiError } from "@workspace/api-client-react";
+import { LogOut, Crown, Shield, ShieldX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -18,9 +18,33 @@ export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { signOut } = useClerk();
   const { user: clerkUser } = useUser();
-  const { data: me } = useGetMe();
+  const { data: me, error: meError } = useGetMe();
 
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+  if (meError instanceof ApiError && meError.status === 403) {
+    return (
+      <div className="min-h-[100dvh] flex items-center justify-center bg-background px-4">
+        <div className="max-w-md text-center space-y-4">
+          <ShieldX className="w-12 h-12 mx-auto text-muted-foreground" />
+          <h1 className="text-2xl font-semibold">Access restricted</h1>
+          <p className="text-muted-foreground">
+            {clerkUser?.primaryEmailAddress?.emailAddress
+              ? `${clerkUser.primaryEmailAddress.emailAddress} is not on the approved members list.`
+              : "Your email is not on the approved members list."}{" "}
+            If you believe this is a mistake, please contact the FMAA team.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => signOut({ redirectUrl: basePath || "/" })}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign out
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const navItems = [
     { label: "Home", path: "/portal" },
@@ -83,14 +107,8 @@ export function Layout({ children }: { children: ReactNode }) {
                 <DropdownMenuSeparator />
                 <div className="px-2 py-1.5">
                   <div className="flex items-center gap-2">
-                    {me?.isPremium ? (
-                      <Crown className="w-4 h-4 text-primary" />
-                    ) : (
-                      <User className="w-4 h-4 text-muted-foreground" />
-                    )}
-                    <span className="text-sm font-medium">
-                      {me?.isPremium ? "Premium Member" : "Standard Member"}
-                    </span>
+                    <Crown className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium">Premium Member</span>
                   </div>
                   {me?.isAdmin && (
                     <div className="flex items-center gap-2 mt-2">

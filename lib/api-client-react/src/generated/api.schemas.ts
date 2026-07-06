@@ -186,7 +186,6 @@ export interface MemberUpdate {
   name?: string;
   email?: string;
   role?: MemberRole;
-  tier?: MembershipTier;
 }
 
 export interface ApprovedMember {
