@@ -6,7 +6,7 @@ import {
   useGetMe,
   useListMembers, useUpdateMember,
   useListApprovedMembers, useAddApprovedMembers, useDeleteApprovedMember,
-  MemberRole,
+  MemberRole, MembershipTier,
 } from "@workspace/api-client-react";
 import { queryClient } from "@/lib/queryClient";
 
@@ -116,7 +116,7 @@ function ApprovedMembersManager() {
   };
 
   const handleRemove = (email: string) => {
-    if (!confirm(`Remove ${email} from the approved list?`)) return;
+    if (!confirm(`Remove ${email} from the approved list? Their account will be downgraded to Standard.`)) return;
     deleteEmail.mutate(
       { email },
       {
@@ -258,6 +258,15 @@ function MembersManager() {
     });
   };
 
+  const handleTierChange = (id: string, tier: MembershipTier) => {
+    updateMember.mutate({ id, data: { tier } }, {
+      onSuccess: () => {
+        toast({ title: "Tier updated" });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      },
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -327,9 +336,18 @@ function MembersManager() {
                     </Select>
                   </TableCell>
                   <TableCell>
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                      Premium
-                    </span>
+                    <Select
+                      value={member.tier}
+                      onValueChange={(v) => handleTierChange(member.id, v as MembershipTier)}
+                    >
+                      <SelectTrigger className={`w-28 h-8 font-medium text-xs border-0 ${member.tier === "premium" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-muted text-muted-foreground"}`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="standard">Standard</SelectItem>
+                        <SelectItem value="premium">Premium</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell className="text-right">
                     {isEditing ? (
@@ -374,7 +392,10 @@ function MembersManager() {
         {members && members.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-3 pt-4 border-t">
             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-              {members.length} Premium
+              {members.filter(m => m.tier === "premium").length} Premium
+            </span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+              {members.filter(m => m.tier === "standard").length} Standard
             </span>
             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
               {members.filter(m => m.role === "admin").length} Admin

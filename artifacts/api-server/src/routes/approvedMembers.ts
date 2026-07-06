@@ -164,6 +164,10 @@ router.delete(
       res.status(404).json({ error: "Approved member not found" });
       return;
     }
+    await db
+      .update(usersTable)
+      .set({ tier: "standard" })
+      .where(and(eq(usersTable.email, email), ne(usersTable.role, "admin")));
     // Remove the placeholder member row if they never signed in.
     await db.delete(usersTable).where(eq(usersTable.id, `pending:${email}`));
     res.sendStatus(204);

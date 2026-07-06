@@ -5,4 +5,3 @@
 - [Member reconciliation](member-reconciliation.md) — approved emails pre-create `pending:<email>` user rows; sign-in adopts them by PK only, never by email (email not unique, FK no ON UPDATE CASCADE).
 - [Resource list payload size](resource-payload-size.md) — base64 files live in file_url; list endpoints must exclude it at SQL level or list pages fail to render.
 - [Clerk pre-provisioned member accounts](clerk-preprovision.md) — approved emails get passwordless Clerk accounts created server-side; no public sign-up in the portal.
-- [Premium-only membership](premium-only-membership.md) — standard tier retired; approval list is the access gate, unapproved sign-ins get 403 not_approved.

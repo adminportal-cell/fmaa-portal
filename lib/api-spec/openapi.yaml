@@ -43,11 +43,6 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
-        "403":
-          description: Signed-in email is not on the approved members list (code "not_approved")
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
 
   /dashboard/summary:
     get:
@@ -600,6 +595,7 @@ components:
         name: { type: string }
         email: { type: string }
         role: { $ref: "#/components/schemas/MemberRole" }
+        tier: { $ref: "#/components/schemas/MembershipTier" }
 
     ApprovedMember:
       type: object
